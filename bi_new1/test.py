@@ -4,6 +4,11 @@ import math
 import numpy as np
 from sklearn.model_selection import train_test_split
 from os.path import join
+import heapq
+import os
+
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 source_data = '/home/joyfly/桌面/all_data.pkl'
 train_batch_size = 256
@@ -11,11 +16,11 @@ dev_batch_size = 256
 test_batch_size = 256
 embedding_size = 256
 layer_num = 2
-batch_size = 512
+batch_size = 256
 pouncation_num = 7
 learning_rate = 0.8
 isTrain = True
-epochs = 5000
+epochs = 50
 summaries_dir = '/home/joyfly/桌面/summary'
 save_dir = '/home/joyfly/桌面/ckpt/'
 steps_per_print = 300
@@ -65,12 +70,43 @@ def bias_variable(shape):
     return tf.Variable(initial)
 
 
+def judge(x):
+    if x < 6:
+        return x
+
+
+# 根据beam_search算法 每次取前3次概率最高的序列
 def search_bestresult(waiting_deal_label):
-    score = np.zeros(3, tf.float32)
-    label = [3]
+    fin_label = []
     for duan in waiting_deal_label:
-        for zi in duan:
-            break
+        # score = 0
+        label = []
+        if duan:
+            short_score = np.zeros(shape=(3, 3), dtype=np.float32)
+            short_label = [[[] for _ in range(3)] for _ in range(3)]
+            for zi in duan:
+                if zi:
+                    score_three = heapq.nlargest(3, zi)
+                    index_three = map(zi.index, score_three)
+                    for i in range(3):
+                        for j in range(3):
+                            short_score[i][j] = short_score[i][0]
+                            short_score[i][j] += score_three[j]
+                            short_label[i][j] = short_label[i][0]
+                            short_label[i][j].append(index_three[j])
+                    now_score = short_score
+                    now_label = short_label
+                    now_score_reshape = np.reshape(now_score, -1)
+                    now_label_reshape = np.reshape(now_label, now_score)
+                    now_score_f = heapq.nlargest(3, now_score_reshape)
+                    index = map(now_score_reshape.index, now_score_f)
+                    for i in range(3):
+                        short_score[i][0] = now_score_reshape[index[i]]
+                        short_label[i][0] = now_label_reshape[index[i]]
+            # score = short_score[0][0]
+            label = short_label[0][0]
+        fin_label.append(label)
+    return fin_label
 
 
 def main():
@@ -91,7 +127,6 @@ def main():
     # 各数据集batch
     train_dataset = tf.data.Dataset.from_tensor_slices((train_word, train_label))
     train_dataset = train_dataset.batch(train_batch_size)
-    print(train_dataset)
 
     dev_dataset = tf.data.Dataset.from_tensor_slices((dev_word, dev_label))
     dev_dataset = dev_dataset.batch(dev_batch_size)
@@ -118,7 +153,6 @@ def main():
     # embedding layer
     embeddings = tf.Variable(tf.random_uniform([vocab_size, embedding_size], -1, 1), dtype=tf.float32)
     inputs = tf.nn.embedding_lookup(embeddings, data_word)
-    print(inputs.shape)
 
     # 梯度下降
     keep_prob = tf.placeholder(tf.float32, [])
@@ -128,11 +162,11 @@ def main():
     gru_lw_cell = tf.nn.rnn_cell.GRUCell(num_units=embedding_size)
 
     # 对dropout函数初始化
-    drop_keep_rate = tf.placeholder(tf.float32, name="dropout_keep")
+    # drop_keep_rate = tf.placeholder(tf.float32, [])
 
     # 为避免过拟合使用dropout函数
-    gru_fw_cell = tf.nn.rnn_cell.DropoutWrapper(gru_fw_cell, input_keep_prob=1.0, output_keep_prob=drop_keep_rate)
-    gru_lw_cell = tf.nn.rnn_cell.DropoutWrapper(gru_lw_cell, input_keep_prob=1.0, output_keep_prob=drop_keep_rate)
+    gru_fw_cell = tf.nn.rnn_cell.DropoutWrapper(gru_fw_cell, input_keep_prob=1.0, output_keep_prob=1.0)
+    gru_lw_cell = tf.nn.rnn_cell.DropoutWrapper(gru_lw_cell, input_keep_prob=1.0, output_keep_prob=1.0)
 
     # 设置多层GRU
     stacked_fw_cell = tf.nn.rnn_cell.MultiRNNCell([gru_fw_cell] * layer_num, state_is_tuple=True)
@@ -147,7 +181,6 @@ def main():
                                                    initial_lw_cell, dtype=tf.float32)
     output = tf.stack(outputs, axis=1)
     output = tf.reshape(tf.concat(output, 1), [-1, embedding_size * 2])
-    print(output.shape)
 
     # output layer
     softmax_weight = weight_variable([embedding_size * 2, pouncation_num])
@@ -159,16 +192,12 @@ def main():
 
     pre_labels_reshape = tf.nn.softmax(begin_pre_labels_reshape, axis=-1)
 
-    print('------0', data_word.shape)
     print(pre_labels_reshape.shape)
     y_label_pre = tf.cast(tf.argmax(pre_labels_reshape, axis=-1), tf.int32)
-    print('------1', y_label_pre.shape)
 
     y_label_reshape = tf.reshape(data_label, (-1, 512, 7))
-    y_label_real_soft = tf.nn.softmax(y_label_reshape)
 
     y_label_real = tf.cast(tf.argmax(y_label_reshape, axis=-1), tf.int32)
-    print('------2', y_label_real.shape)
 
     # prediction
     correct_prediction = tf.equal(y_label_pre, y_label_real)
@@ -180,7 +209,7 @@ def main():
 
     # loss
     cross_entropy = tf.reduce_mean(
-        -tf.reduce_sum(tf.cast(y_label_real_soft, dtype=tf.float32) * tf.log(pre_labels_reshape)))
+        -tf.reduce_sum(tf.cast(y_label_reshape, dtype=tf.float32) * tf.log(pre_labels_reshape)))
 
     # model summary
     tf.summary.scalar('loss', cross_entropy)
@@ -208,6 +237,7 @@ def main():
 
     best_score = 0
     num_epoch_no_improve = 0
+    print("Traing......")
     if isTrain:
         for epoch in range(epochs):
             print('当前轮次为：', epoch)
@@ -253,13 +283,13 @@ def main():
 
         for step in range(int(test_step)):
             data_word_result, data_label_pre_result, data_label_real_result, acc = sess.run(
-                [data_word, begin_pre_labels_reshape, y_label_reshape, accuracy],
+                [data_word, begin_pre_labels_reshape, y_label_real, accuracy],
                 feed_dict={keep_prob: 1})
             print("test step", step, '未处理前Accuracy', acc)
-            # y_predict_label = np.reshape(data_label_result, data_word_result.shape)
+            final_label_pre_result = search_bestresult(data_label_pre_result)
             for i in range(len(data_word_result)):
                 data_word_result, y_predict_label = list(filter(lambda x: x, data_word_result[i])), list(
-                    filter(lambda x: x, data_label_pre_result[i]))
+                    filter(judge, final_label_pre_result))
                 word_x, label_y = ''.join(id2word[data_word_result].values), ''.join(
                     id2tag[y_predict_label].values)
                 print(word_x, label_y)
