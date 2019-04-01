@@ -18,16 +18,17 @@ embedding_size = 256
 layer_num = 2
 batch_size = 256
 pouncation_num = 7
-learning_rate = 0.8
-isTrain = True
+learning_rate = 0.01
+isTrain = False
 epochs = 50
 summaries_dir = '/home/joyfly/桌面/summary'
 save_dir = '/home/joyfly/桌面/ckpt/'
 steps_per_print = 300
 steps_per_sumary = 500
 epochs_per_dev = 2
-num_epoch_no_improve_bear = 10
-sequence_length = 512
+num_epoch_no_improve_bear = 6
+sequence_length = 256
+lamda = 0.7
 
 
 def load_data():
@@ -70,50 +71,97 @@ def bias_variable(shape):
     return tf.Variable(initial)
 
 
-def judge(x):
-    if x < 6:
-        return x
+trans_pro_new = np.zeros(shape=(7, 7), dtype=np.float32)
+trans_pro_new[0][1] += 0.8
+trans_pro_new[0][0] += 0.2
+trans_pro_new[1][2] += 0.635
+trans_pro_new[1][3] += 0.222
+trans_pro_new[1][4] += 0.046
+trans_pro_new[1][5] += 0.097
+trans_pro_new[2][2] += 0.831
+trans_pro_new[2][3] += 0.169
+trans_pro_new[3][4] += 1
+trans_pro_new[4][5] += 1
+trans_pro_new[5][0] += 0.007
+trans_pro_new[5][1] += 0.993
 
 
 # 根据beam_search算法 每次取前3次概率最高的序列
 def search_bestresult(waiting_deal_label):
-    fin_label = []
+    final_label = []
     for duan in waiting_deal_label:
-        # score = 0
-        label = []
-        if duan:
-            short_score = np.zeros(shape=(3, 3), dtype=np.float32)
-            short_label = [[[] for _ in range(3)] for _ in range(3)]
-            for zi in duan:
-                if zi:
-                    score_three = heapq.nlargest(3, zi)
-                    index_three = map(zi.index, score_three)
-                    for i in range(3):
-                        for j in range(3):
-                            short_score[i][j] = short_score[i][0]
-                            short_score[i][j] += score_three[j]
-                            short_label[i][j] = short_label[i][0]
-                            short_label[i][j].append(index_three[j])
-                    now_score = short_score
-                    now_label = short_label
-                    now_score_reshape = np.reshape(now_score, -1)
-                    now_label_reshape = np.reshape(now_label, now_score)
-                    now_score_f = heapq.nlargest(3, now_score_reshape)
-                    index = map(now_score_reshape.index, now_score_f)
-                    for i in range(3):
-                        short_score[i][0] = now_score_reshape[index[i]]
-                        short_label[i][0] = now_label_reshape[index[i]]
-            # score = short_score[0][0]
-            label = short_label[0][0]
-        fin_label.append(label)
-    return fin_label
+        label_fin = [[] for _ in range(3)]
+        now_label_three = [[] for _ in range(3)]
+        now_score_three = np.zeros(shape=3)
+        now_label_nine = [[] for _ in range(9)]
+        now_score_nine = np.zeros(shape=9)
+        lamda_t = 0.7
+        beda = 0.01
+        word_length = 0
+        zi_num = 0
+        for zi in duan:
+            score_three = heapq.nlargest(3, zi)
+            index_three = list(map(list(zi).index, score_three))
+            if now_label_three[0]:
+                zi_num += 1
+                for i in range(3):
+                    now_score_nine[i] = now_score_three[i]
+                    now_label_nine[i] = []
+                    now_label_nine[i].extend(now_label_three[i])
+                    now_score_nine[i + 3] = now_score_three[i]
+                    now_label_nine[i + 3] = []
+                    now_label_nine[i + 3].extend(now_label_three[i])
+                    now_score_nine[i + 6] = now_score_three[i]
+                    now_label_nine[i + 6] = []
+                    now_label_nine[i + 6].extend(now_label_three[i])
+                for i in range(3):
+                    one = now_label_nine[i][len(now_label_nine[i]) - 1]
+                    two = index_three[0]
+                    now_score_nine[i] = now_score_nine[i] + score_three[0] + lamda_t * trans_pro_new[one][
+                        two] + beda * word_length
+                    now_label_nine[i].append(two)
+
+                    one_2 = now_label_nine[i + 3][len(now_label_nine[i + 3]) - 1]
+                    two_2 = index_three[1]
+                    now_score_nine[i + 3] = now_score_nine[i + 3] + score_three[1] + lamda_t * trans_pro_new[
+                        one_2][two_2] + beda * word_length
+                    now_label_nine[i + 3].append(two_2)
+
+                    one_3 = now_label_nine[i + 6][len(now_label_nine[i + 6]) - 1]
+                    two_3 = index_three[2]
+                    now_score_nine[i + 6] = now_score_nine[i + 6] + score_three[2] + lamda_t * trans_pro_new[
+                        one_3][two_3] + beda * word_length
+                    now_label_nine[i + 6].append(two_3)
+
+                now_score_f = heapq.nlargest(3, now_score_nine)
+                index_f = list(map(list(now_score_nine).index, now_score_f))
+                for i in range(3):
+                    now_label_three[i] = []
+                    now_score_three[i] = now_score_f[i]
+                    now_label_three[i].extend(now_label_nine[index_f[i]])
+                    label_fin[i].append(now_label_three[i])
+                # print(now_label_three[0])
+            else:
+                zi_num += 1
+                for i in range(3):
+                    now_score_three[i] += score_three[i]
+                    now_label_three[i].append(index_three[i])
+                    label_fin[i].append(now_label_three[i])
+
+                # print(now_label_three[0])
+        final_label.append(now_label_nine[0])
+    return final_label
+
+
+def judge(x):
+    if x < 6:
+        return x
 
 
 def main():
     global learning_rate
     # 加载数据
     data_word, data_label, word2id, id2word, tag2id, id2tag = load_data()
-
     # 分割数据集
     train_word, train_label, dev_word, dev_label, test_word, test_label = get_data(data_word, data_label)
     train_step = math.ceil(train_word.shape[0] / train_batch_size)
@@ -173,12 +221,11 @@ def main():
     stacked_lw_cell = tf.nn.rnn_cell.MultiRNNCell([gru_lw_cell] * layer_num, state_is_tuple=True)
 
     # 初始化状态
-    initial_fw_cell = stacked_fw_cell.zero_state(batch_size, tf.float32)
-    initial_lw_cell = stacked_lw_cell.zero_state(batch_size, tf.float32)
+    # initial_fw_cell = stacked_fw_cell.zero_state()
+    # initial_lw_cell = stacked_lw_cell.zero_state()
 
     inputs = tf.unstack(inputs, axis=1)
-    outputs, _, _ = tf.nn.static_bidirectional_rnn(stacked_fw_cell, stacked_lw_cell, inputs, initial_fw_cell,
-                                                   initial_lw_cell, dtype=tf.float32)
+    outputs, _, _ = tf.nn.static_bidirectional_rnn(stacked_fw_cell, stacked_lw_cell, inputs, dtype=tf.float32)
     output = tf.stack(outputs, axis=1)
     output = tf.reshape(tf.concat(output, 1), [-1, embedding_size * 2])
 
@@ -188,14 +235,13 @@ def main():
     begin_pre_labels = tf.matmul(output, softmax_weight) + softmax_bias
 
     # 原始每段句子的标注结果标签概率
-    begin_pre_labels_reshape = tf.reshape(begin_pre_labels, (-1, 512, 7))
+    begin_pre_labels_reshape = tf.reshape(begin_pre_labels, (-1, sequence_length, 7))
 
     pre_labels_reshape = tf.nn.softmax(begin_pre_labels_reshape, axis=-1)
 
-    print(pre_labels_reshape.shape)
     y_label_pre = tf.cast(tf.argmax(pre_labels_reshape, axis=-1), tf.int32)
 
-    y_label_reshape = tf.reshape(data_label, (-1, 512, 7))
+    y_label_reshape = tf.reshape(data_label, (-1, sequence_length, 7))
 
     y_label_real = tf.cast(tf.argmax(y_label_reshape, axis=-1), tf.int32)
 
@@ -205,23 +251,22 @@ def main():
     tf.summary.scalar('accuracy', accuracy)
 
     print('Prediction', correct_prediction, 'Accuracy', accuracy)
-    print(data_label.shape)
 
     # loss
     cross_entropy = tf.reduce_mean(
-        -tf.reduce_sum(tf.cast(y_label_reshape, dtype=tf.float32) * tf.log(pre_labels_reshape)))
+        tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y_label_real, logits=begin_pre_labels_reshape + 1e-10))
 
     # model summary
     tf.summary.scalar('loss', cross_entropy)
 
     # train
-    optimizer = tf.train.AdamOptimizer(learning_rate, beta1=0.5)
-    grads = optimizer.compute_gradients(cross_entropy)
-    for i, (g, v) in enumerate(grads):
-        if g is not None:
-            grads[i] = (tf.clip_by_norm(g, 5), v)  # 阈值这里设为5
-    train_step_op = optimizer.apply_gradients(grads)
-    # trian_step_op = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy)
+    # optimizer = tf.train.AdamOptimizer(learning_rate, beta1=0.5)
+    # grads = optimizer.compute_gradients(cross_entropy)
+    # for i, (g, v) in enumerate(grads):
+    #     if g is not None:
+    #         grads[i] = (tf.clip_by_norm(g, 5), v)  # 阈值这里设为5
+    # train_step_op = optimizer.apply_gradients(grads, global_step)
+    train_step_op = tf.train.RMSPropOptimizer(learning_rate).minimize(cross_entropy, global_step)
 
     # Saver
     saver = tf.train.Saver(max_to_keep=10)
@@ -232,29 +277,35 @@ def main():
     Flag = 0
 
     # summarier
-    summaries = tf.summary.merge_all()
-    writer = tf.summary.FileWriter(join(summaries_dir, 'train'), sess.graph)
+    # summaries = tf.summary.merge_all()
+    # writer = tf.summary.FileWriter(join(summaries_dir, 'train'), sess.graph)
 
     best_score = 0
     num_epoch_no_improve = 0
-    print("Traing......")
+
     if isTrain:
+        print("Traing......")
         for epoch in range(epochs):
             print('当前轮次为：', epoch)
             tf.train.global_step(sess, global_step_tensor=global_step)
             sess.run(train_initial_op)
             for step in range(int(train_step)):
-                smrs, loss, acc, gstep, _ = sess.run([summaries, cross_entropy, accuracy, global_step, train_step_op],
-                                                     feed_dict={keep_prob: 1})
-
+                labels_pre_h, ha, loss, acc, gstep, _ = sess.run(
+                    [begin_pre_labels, begin_pre_labels_reshape, cross_entropy, accuracy, global_step,
+                     train_step_op],
+                    feed_dict={keep_prob: 1})
+                # smrs, loss, acc, gstep, _ = sess.run([summaries, cross_entropy, accuracy, global_step, train_step_op],
+                #                                      feed_dict={keep_prob: 1})
+                print("当前batch:", step, 'loss=', loss, 'accuracy=', acc)
                 if step % steps_per_print == 0:
                     print('Global Step', gstep, 'Step', step, 'Trian loss', loss, 'Train Accuracy', acc)
 
-                    if gstep % steps_per_sumary == 0:
-                        writer.add_summary(smrs, gstep)
-                        print('Write Summaries to ', summaries_dir)
+                    # if gstep % steps_per_sumary == 0:
+                    #     writer.add_summary(smrs, gstep)
+                    #     print('Write Summaries to ', summaries_dir)
 
             if epoch % epochs_per_dev == 0:
+                print('正在验证中：')
                 sess.run(dev_initial_op)
                 for step in range(int(dev_step)):
                     # 此处使用的minibatch梯度下降,将数据集分成train_step份.在每一次小batch中更新参数
@@ -267,13 +318,15 @@ def main():
                             print('Dev Accuracy', acc, 'Step', step)
                         else:
                             num_epoch_no_improve += 1
-                            learning_rate -= 0.05
+                            learning_rate = learning_rate * lamda
                             if num_epoch_no_improve > num_epoch_no_improve_bear:
                                 Flag = 1
                                 break
             if Flag:
                 break
     else:
+
+        print("Testing......")
         # load model
         last_ckpt = tf.train.latest_checkpoint(save_dir)
         if last_ckpt:
@@ -283,15 +336,19 @@ def main():
 
         for step in range(int(test_step)):
             data_word_result, data_label_pre_result, data_label_real_result, acc = sess.run(
-                [data_word, begin_pre_labels_reshape, y_label_real, accuracy],
+                [data_word, y_label_pre, y_label_real, accuracy],
                 feed_dict={keep_prob: 1})
             print("test step", step, '未处理前Accuracy', acc)
-            final_label_pre_result = search_bestresult(data_label_pre_result)
+            # final_label_pre_result = search_bestresult(data_label_pre_result)
+
             for i in range(len(data_word_result)):
-                data_word_result, y_predict_label = list(filter(lambda x: x, data_word_result[i])), list(
-                    filter(judge, final_label_pre_result))
-                word_x, label_y = ''.join(id2word[data_word_result].values), ''.join(
-                    id2tag[y_predict_label].values)
+                print(data_label_pre_result[i])
+                print(data_word_result[i])
+                data_word_result_final = list(filter(lambda x: x, data_word_result[i]))
+                y_predict_label_final = list(filter(judge, data_label_pre_result[i]))
+                word_x = ''.join(id2word[data_word_result_final].values)
+                label_y = ''.join(id2tag[y_predict_label_final].values)
+                label_y = label_y.replace(' ', '')
                 print(word_x, label_y)
 
 

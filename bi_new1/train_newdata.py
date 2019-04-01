@@ -60,7 +60,7 @@ print('data length ', len(data), 'Label length ', len(label))
 print('data example', data[0], )
 print('label example', label[0])
 
-maxlen = 512  # 此处的maxlen设置的是每段古文默认的字数，若超过这个字数，则采取截断措施，不够则padding 0
+maxlen = 256  # 此处的maxlen设置的是每段古文默认的字数，若超过这个字数，则采取截断措施，不够则padding 0
 
 # 需要设置文字和标注转换化为index,根据index转换为文字或者标注
 all_words = list(chain(*data))

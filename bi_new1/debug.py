@@ -1,24 +1,19 @@
 import tensorflow as tf
 import numpy as np
 import heapq
+import copy
+import re
 
 # A = [[[1.0, 3.0, 4.0, 9.0], [0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0]],
-#      [[1.0, 3.0, 4.0, 9.0], [0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0]],
-#      [[1.0, 3.0, 4.0, 9.0], [0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0]],
-#      [[1.0, 3.0, 4.0, 9.0], [0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0]]]
-# D = [[[1.0, 3.0, 4.0, 9.0], [0, 0, 0, 1], [0, 0, 1, 0], [0, 1, 0, 0], [1, 0, 0, 0]]]
-B = [[1, 3, 4], [2, 4, 1], [1, 1, 1]]
-D = [[2, 3, 1], [4, 3, 2], [2, 2, 2]]
-C = [0.5, -2, 4, 9]
-F = [1, 2]
-B = np.reshape(B, -1)
-D = np.reshape(D, -1)
-print(B)
-print(D)
 
-# short_label = [[[] for _ in range(3)] for _ in range(3)]
+b = [[[], [1, 2, 3], [1, 2, 3]],
+     [[1, 2, 3], [1, 2, 3], [1, 2, 3]],
+     [[1, 2, 3], [1, 2, 3], [1, 2, 3]]
+     ]
+FFF = 'M M M M M M M M '
+f = FFF.replace(' ', '')
+print(f)
 # for i in range(3):
-#     short_label[2][2].append(2)
-# print(short_label)
-# la = heapq.nlargest(2, C)
-# la_index = map(C.index, la)
+#     now_score_nine[i] += score_three[i]
+#     now_score_nine[i + 3] += score_three[i + 1]
+#     now_score_nine[i + 6] += score_three[i + 2]

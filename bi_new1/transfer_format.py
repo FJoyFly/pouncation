@@ -30,20 +30,21 @@ def search_txt(file_path, outfile):
                     if line:
                         if len(line) > 512:
                             length += 1
-                        if len(line) > 32:
-                            word = re.findall('[，。:“”？！；]', line)
-                            if word is None:
-                                num_none += 1
-                                if num_none > 5:
-                                    break
-                                continue
-                            num_none = 0
-                            all_length += 1
-                            f.write(line)
-                        else:
-                            all_length += 1
-                            num_none = 0
-                            f.write(line)
+                        if len(line) < 256:
+                            if len(line) > 32:
+                                word = re.findall('[，。:“”？！；]', line)
+                                if word is None:
+                                    num_none += 1
+                                    if num_none > 5:
+                                        break
+                                    continue
+                                num_none = 0
+                                all_length += 1
+                                f.write(line)
+                            else:
+                                all_length += 1
+                                num_none = 0
+                                f.write(line)
                 f.write('\n')
         elif os.path.isdir(newdir):
             search_txt(new_filenames, outfile)
@@ -83,8 +84,10 @@ def score_transfer(inputfile):
     num_of_length = np.zeros(6)
     data = codecs.open(inputfile, 'r', 'utf-8')
     for i in data.readlines():
-        list = re.split('[，。？：；‘’“”]', i)
+        list = re.split("[，。？：；‘’“”、]", i)
         for _ in list:
+            _ = _.strip()
+            print(_, len(_))
             number_length = len(_)
             if number_length > 5:
                 num_of_length[5] += 1
@@ -99,9 +102,9 @@ def score_transfer(inputfile):
             elif number_length == 1:
                 num_of_length[0] += 1
     return num_of_length
-    # 将文本后标注上对应的标签
 
 
+# 将文本后标注上对应的标签
 def character_tagging(input_file, output_file):
     '''
 
