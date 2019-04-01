@@ -16,15 +16,14 @@ dev_batch_size = 256
 test_batch_size = 256
 embedding_size = 256
 layer_num = 2
-batch_size = 256
 pouncation_num = 7
 learning_rate = 0.01
 isTrain = False
-epochs = 50
-summaries_dir = '/home/joyfly/桌面/summary'
+epochs = 10
+summaries_dir = '/home/joyfly/桌面/summary/'
 save_dir = '/home/joyfly/桌面/ckpt/'
-steps_per_print = 300
-steps_per_sumary = 500
+steps_per_print = 6
+steps_per_sumary = 10
 epochs_per_dev = 2
 num_epoch_no_improve_bear = 6
 sequence_length = 256
@@ -158,8 +157,33 @@ def judge(x):
         return x
 
 
+def compute_PRFvalues(label_1, label_2):
+    real_poun = 0
+    fail_poun = 0
+    fail_nopoun = 0
+    real_nopoun = 0
+    for duan1, duan2 in label_1, label_2:
+        for i in range(len(duan1)):
+            if -1 < duan2[i] < 6:
+                if duan1[i] < 2 and duan2[i] < 2:
+                    real_poun += 1
+                elif duan1[i] < 2 and duan2[i] > 1:
+                    fail_poun += 1
+                elif duan1[i] > 1 and duan2[i] < 2:
+                    fail_nopoun += 1
+                elif duan1[i] > 1 and duan2[i] > 1:
+                    real_nopoun += 1
+            else:
+                break
+    P_value = format(real_poun / (real_poun + fail_poun), '0.3f')
+    R_value = format(real_poun / (real_poun + fail_nopoun), '0.3f')
+    F_value = format(2 * P_value * R_value / (P_value + R_value), '0.3f')
+    A_value = format((real_nopoun + real_poun) / (real_nopoun + real_poun + fail_nopoun + fail_poun))
+    return P_value, R_value, F_value, A_value
+
+
 def main():
-    global learning_rate
+    global learning_rate, change_result
     # 加载数据
     data_word, data_label, word2id, id2word, tag2id, id2tag = load_data()
     # 分割数据集
@@ -247,17 +271,20 @@ def main():
 
     # prediction
     correct_prediction = tf.equal(y_label_pre, y_label_real)
-    accuracy = tf.reduce_mean(tf.cast(correct_prediction, dtype=tf.float32))
-    tf.summary.scalar('accuracy', accuracy)
+    # with tf.name_scope('accuracy'):
+
+    with tf.name_scope('accuracy'):
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, dtype=tf.float32))
+        tf.summary.scalar('accuracy', accuracy)
 
     print('Prediction', correct_prediction, 'Accuracy', accuracy)
 
     # loss
-    cross_entropy = tf.reduce_mean(
-        tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y_label_real, logits=begin_pre_labels_reshape + 1e-10))
-
-    # model summary
-    tf.summary.scalar('loss', cross_entropy)
+    with tf.name_scope('loss'):
+        cross_entropy = tf.reduce_mean(
+            tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y_label_real,
+                                                           logits=begin_pre_labels_reshape + 1e-10))
+        tf.summary.scalar('loss', cross_entropy)
 
     # train
     # optimizer = tf.train.AdamOptimizer(learning_rate, beta1=0.5)
@@ -273,12 +300,17 @@ def main():
 
     sess = tf.InteractiveSession()
     sess.run(tf.global_variables_initializer())
+
+    # summary
+    if isTrain:
+        summaries = tf.summary.merge_all()
+        writer = tf.summary.FileWriter(join(summaries_dir, 'train'), sess.graph)
+    else:
+        summaries = tf.summary.merge_all()
+        writer = tf.summary.FileWriter(join(summaries_dir, 'test'), sess.graph)
+
     gstep = 0
     Flag = 0
-
-    # summarier
-    # summaries = tf.summary.merge_all()
-    # writer = tf.summary.FileWriter(join(summaries_dir, 'train'), sess.graph)
 
     best_score = 0
     num_epoch_no_improve = 0
@@ -290,9 +322,8 @@ def main():
             tf.train.global_step(sess, global_step_tensor=global_step)
             sess.run(train_initial_op)
             for step in range(int(train_step)):
-                labels_pre_h, ha, loss, acc, gstep, _ = sess.run(
-                    [begin_pre_labels, begin_pre_labels_reshape, cross_entropy, accuracy, global_step,
-                     train_step_op],
+                summary_run, labels_pre_h, loss, acc, gstep, _ = sess.run(
+                    [summaries, begin_pre_labels_reshape, cross_entropy, accuracy, global_step, train_step_op],
                     feed_dict={keep_prob: 1})
                 # smrs, loss, acc, gstep, _ = sess.run([summaries, cross_entropy, accuracy, global_step, train_step_op],
                 #                                      feed_dict={keep_prob: 1})
@@ -300,9 +331,9 @@ def main():
                 if step % steps_per_print == 0:
                     print('Global Step', gstep, 'Step', step, 'Trian loss', loss, 'Train Accuracy', acc)
 
-                    # if gstep % steps_per_sumary == 0:
-                    #     writer.add_summary(smrs, gstep)
-                    #     print('Write Summaries to ', summaries_dir)
+                if gstep % steps_per_sumary == 0:
+                    writer.add_summary(summary_run, gstep)
+                    print('Write Summaries to', summaries_dir)
 
             if epoch % epochs_per_dev == 0:
                 print('正在验证中：')
@@ -336,16 +367,14 @@ def main():
 
         for step in range(int(test_step)):
             data_word_result, data_label_pre_result, data_label_real_result, acc = sess.run(
-                [data_word, y_label_pre, y_label_real, accuracy],
+                [data_word, begin_pre_labels_reshape, y_label_real, accuracy],
                 feed_dict={keep_prob: 1})
             print("test step", step, '未处理前Accuracy', acc)
-            # final_label_pre_result = search_bestresult(data_label_pre_result)
-
+            final_label_pre_result = search_bestresult(data_label_pre_result)
+            # P_value, R_value, F_value, R_value = compute_PRFvalues(final_label_pre_result, data_label_real_result)
             for i in range(len(data_word_result)):
-                print(data_label_pre_result[i])
-                print(data_word_result[i])
                 data_word_result_final = list(filter(lambda x: x, data_word_result[i]))
-                y_predict_label_final = list(filter(judge, data_label_pre_result[i]))
+                y_predict_label_final = list(filter(judge, final_label_pre_result[i]))
                 word_x = ''.join(id2word[data_word_result_final].values)
                 label_y = ''.join(id2tag[y_predict_label_final].values)
                 label_y = label_y.replace(' ', '')

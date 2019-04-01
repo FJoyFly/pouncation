@@ -13,6 +13,16 @@ b = [[[], [1, 2, 3], [1, 2, 3]],
 FFF = 'M M M M M M M M '
 f = FFF.replace(' ', '')
 print(f)
+n = [1, 2, 3]
+if n is None:
+    print('yes')
+else:
+    print('No')
+a = 3
+b = 7
+print(a / b)
+uhu = format(3 / 7, '0.3f')
+print(uhu)
 # for i in range(3):
 #     now_score_nine[i] += score_three[i]
 #     now_score_nine[i + 3] += score_three[i + 1]

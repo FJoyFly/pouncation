@@ -4,7 +4,7 @@ import os.path
 import re
 import numpy as np
 
-file_path = '/home/joyfly/桌面/全部/别史'
+file_path = '/home/joyfly/桌面/全部/数据'
 outfile = '/home/joyfly/桌面/宋书'
 in_output_file = '/home/joyfly/桌面/宋2'
 output_file = '/home/joyfly/桌面/副本2'
@@ -18,7 +18,7 @@ num_none = 0
 def search_txt(file_path, outfile):
     global length, all_length, num_none  # 用来控制文本中没有有标点符号的段落数
     filenames = os.listdir(file_path)
-    f = codecs.open('/home/joyfly/桌面/宋书', 'w', 'utf-8')
+    f = codecs.open('/home/joyfly/桌面/宋书', 'a+', 'utf-8')
     new_filenames = filenames
     for filename in new_filenames:
         newdir = os.path.join(file_path, filename)
@@ -28,8 +28,6 @@ def search_txt(file_path, outfile):
             if os.path.splitext(newdir)[1] == '.txt':
                 for line in open(newdir):
                     if line:
-                        if len(line) > 512:
-                            length += 1
                         if len(line) < 256:
                             if len(line) > 32:
                                 word = re.findall('[，。:“”？！；]', line)
@@ -39,10 +37,8 @@ def search_txt(file_path, outfile):
                                         break
                                     continue
                                 num_none = 0
-                                all_length += 1
                                 f.write(line)
                             else:
-                                all_length += 1
                                 num_none = 0
                                 f.write(line)
                 f.write('\n')
@@ -58,9 +54,11 @@ def change_format(input_file, output_file):
     :param output_file:  输出初整理文本
     :return:
     """
+    global all_length
     input_data = codecs.open(input_file, 'r', 'utf-8')
     output_data = codecs.open(output_file, 'w', 'utf-8')
     for new_data in input_data.readlines():
+        all_length += 1
         if new_data == '\n':
             continue
         else:
@@ -87,7 +85,6 @@ def score_transfer(inputfile):
         list = re.split("[，。？：；‘’“”、]", i)
         for _ in list:
             _ = _.strip()
-            print(_, len(_))
             number_length = len(_)
             if number_length > 5:
                 num_of_length[5] += 1
