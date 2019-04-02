@@ -38,7 +38,7 @@ def get_data_label(word):
     """
     word.extend(' ')
     word = u' '.join(word)
-    word = re.findall('(.)/([BMSE].)', word)  #
+    word = re.findall('(.)/([BMSE].)', word)
     if word:
         word = np.array(word)
         return list(word[:, 0]), list(word[:, 1])

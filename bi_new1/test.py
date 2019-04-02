@@ -6,6 +6,9 @@ from sklearn.model_selection import train_test_split
 from os.path import join
 import heapq
 import os
+import codecs
+import shutil
+
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
@@ -18,14 +21,15 @@ embedding_size = 256
 layer_num = 2
 pouncation_num = 7
 learning_rate = 0.01
-isTrain = False
+isTrain = True
 epochs = 10
 summaries_dir = '/home/joyfly/桌面/summary/'
 save_dir = '/home/joyfly/桌面/ckpt/'
+outputs_path = '/home/joyfly/桌面/'
 steps_per_print = 6
-steps_per_sumary = 10
+steps_per_sumary = 5
 epochs_per_dev = 2
-num_epoch_no_improve_bear = 6
+num_epoch_no_improve_bear = 10
 sequence_length = 256
 lamda = 0.7
 
@@ -153,11 +157,17 @@ def search_bestresult(waiting_deal_label):
 
 
 def judge(x):
-    if x < 6:
+    if -1 < x < 6:
         return x
 
 
 def compute_PRFvalues(label_1, label_2):
+    """
+
+    :param label_1: 预测标签
+    :param label_2: 真实标签
+    :return: 返回对应的P值，R值，F值以及准确率
+    """
     real_poun = 0
     fail_poun = 0
     fail_nopoun = 0
@@ -182,8 +192,47 @@ def compute_PRFvalues(label_1, label_2):
     return P_value, R_value, F_value, A_value
 
 
+def display_word(word, label1, label2):
+    '''
+
+    :param word: 一段古文
+    :param label1: 预测该段古文的标签
+    :param label2: 该段古文的真实标签
+    :return: 打印出对比结果
+    '''
+    outputdata1 = codecs.open(join(outputs_path, '原始'), 'w', 'utf-8')
+    outputdata2 = codecs.open(join(outputs_path, '预测'), 'w', 'utf-8')
+    word_list = word.split(' ')
+    for i in range(len(word_list)):
+        if label1[i] == 1:
+            outputdata1.write(' ' + word_list[i])
+        elif label1[i] == 0:
+            outputdata1.write(' ' + word_list[i] + ' ')
+        else:
+            outputdata1.write(word_list[i])
+        if label2[i] == 1:
+            outputdata2.write(' ' + word_list[i])
+        elif label2[i] == 0:
+            outputdata2.write(' ' + word_list[i] + ' ')
+        else:
+            outputdata2.write(word_list[i])
+    outputdata1.write('\n')
+    outputdata1.close()
+    outputdata2.write('\n')
+    outputdata2.close()
+
+
+def dele_none(label):
+    for i in range(len(label)):
+        if label[len(label) - 1] is None:
+            label.pop()
+        else:
+            break
+    return label
+
+
 def main():
-    global learning_rate, change_result
+    global learning_rate
     # 加载数据
     data_word, data_label, word2id, id2word, tag2id, id2tag = load_data()
     # 分割数据集
@@ -303,9 +352,13 @@ def main():
 
     # summary
     if isTrain:
+        if os.path.exists(join(summaries_dir, 'train')):
+            shutil.rmtree(join(summaries_dir, 'train'))
         summaries = tf.summary.merge_all()
         writer = tf.summary.FileWriter(join(summaries_dir, 'train'), sess.graph)
     else:
+        if os.path.exists(join(summaries_dir, 'test')):
+            shutil.rmtree(join(summaries_dir, 'test'))
         summaries = tf.summary.merge_all()
         writer = tf.summary.FileWriter(join(summaries_dir, 'test'), sess.graph)
 
@@ -322,8 +375,8 @@ def main():
             tf.train.global_step(sess, global_step_tensor=global_step)
             sess.run(train_initial_op)
             for step in range(int(train_step)):
-                summary_run, labels_pre_h, loss, acc, gstep, _ = sess.run(
-                    [summaries, begin_pre_labels_reshape, cross_entropy, accuracy, global_step, train_step_op],
+                labels_pre_h, loss, acc, gstep, _ = sess.run(
+                    [begin_pre_labels_reshape, cross_entropy, accuracy, global_step, train_step_op],
                     feed_dict={keep_prob: 1})
                 # smrs, loss, acc, gstep, _ = sess.run([summaries, cross_entropy, accuracy, global_step, train_step_op],
                 #                                      feed_dict={keep_prob: 1})
@@ -332,6 +385,7 @@ def main():
                     print('Global Step', gstep, 'Step', step, 'Trian loss', loss, 'Train Accuracy', acc)
 
                 if gstep % steps_per_sumary == 0:
+                    summary_run = sess.run([summaries], feed_dict={keep_prob: 1})
                     writer.add_summary(summary_run, gstep)
                     print('Write Summaries to', summaries_dir)
 
@@ -356,7 +410,7 @@ def main():
             if Flag:
                 break
     else:
-
+        number_print = 0
         print("Testing......")
         # load model
         last_ckpt = tf.train.latest_checkpoint(save_dir)
@@ -374,13 +428,24 @@ def main():
             # P_value, R_value, F_value, R_value = compute_PRFvalues(final_label_pre_result, data_label_real_result)
             for i in range(len(data_word_result)):
                 data_word_result_final = list(filter(lambda x: x, data_word_result[i]))
-                y_predict_label_final = list(filter(judge, final_label_pre_result[i]))
+                y_predict_label_final = list(map(judge, final_label_pre_result[i]))
+                y_predict_label_final = dele_none(y_predict_label_final)
+                y_real_label_ = list(map(judge, data_label_real_result[i]))
+                y_real_label_ = dele_none(y_real_label_)
+                word_deal = ' '.join(id2word[data_word_result_final].values)
+                print(word_deal, len(word_deal))
+                print(y_predict_label_final, len(y_predict_label_final))
+                print(y_real_label_, len(y_real_label_))
+                if number_print < 100:
+                    display_word(word_deal, y_predict_label_final, y_real_label_)
+                    number_print += 1
                 word_x = ''.join(id2word[data_word_result_final].values)
                 label_y = ''.join(id2tag[y_predict_label_final].values)
+                label_y_real = ''.join(id2tag[y_real_label_].values)
                 label_y = label_y.replace(' ', '')
-                print(word_x, label_y)
+                label_y_real = label_y_real.replace(' ', '')
+                print(word_x, label_y, label_y_real)
 
 
-# 未完成工作：将返回的汉字按照对应的标签序列进行分割,在B或者S的前面加空格，并打印出一段示例
 if __name__ == '__main__':
     main()

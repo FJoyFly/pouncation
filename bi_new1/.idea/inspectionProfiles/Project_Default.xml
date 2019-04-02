@@ -15,6 +15,7 @@
           <option value="list.*" />
           <option value="numpy.core._multiarray_umath.ndarray.index" />
           <option value="str.__truediv__" />
+          <option value="sys.setdefaultencoding" />
         </list>
       </option>
     </inspection_tool>

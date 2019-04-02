@@ -121,7 +121,6 @@ def simple_cut(s):
     else:
         return []
 
-
 not_cuts = re.compile(u'([\da-zA-Z ]+)|[。，、？！\.\?,!]')
 
 
