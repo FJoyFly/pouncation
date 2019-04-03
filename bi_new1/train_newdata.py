@@ -111,6 +111,7 @@ data_tag = np.asarray(data_tag)
 print("Starting pickle to file.....\n")
 
 path = '/home/joyfly/桌面'
+
 if not exists(path):
     makedirs(path)
 
@@ -121,4 +122,9 @@ with open(join(path, "all_data.pkl"), 'wb') as f:
     pickle.dump(id2word, f)
     pickle.dump(tag2id, f)
     pickle.dump(id2tag, f)
+print('Pickle Finished!')
+
+with open(join(path, "word2id_data.pkl"), 'wb') as f:
+    pickle.dump(word2id, f)
+    pickle.dump(id2word, f)
 print('Pickle Finished!')

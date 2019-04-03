@@ -21,7 +21,7 @@ batch_size = 256
 layer_num = 2
 pouncation_num = 7
 learning_rate = 0.01
-isTrain = True
+isTrain = False
 epochs = 10
 summaries_dir = '/home/joyfly/桌面/summary/'
 save_dir = '/home/joyfly/桌面/ckpt/'
@@ -192,6 +192,7 @@ def compute_PRFvalues(label_1, label_2):
     A_value = format((real_nopoun + real_poun) / (real_nopoun + real_poun + fail_nopoun + fail_poun))
     return P_value, R_value, F_value, A_value
 
+
 #
 # def feed_sequences(word):
 #     sequence_lengths = []
@@ -220,6 +221,8 @@ def display_word(word, label1, label2):
     outputdata1 = codecs.open(join(outputs_path, '原始'), 'a+', 'utf-8')
     outputdata2 = codecs.open(join(outputs_path, '预测'), 'a+', 'utf-8')
     word_list = word.split(' ')
+    outputdata1.write('  ')
+    outputdata2.write('  ')
     for i in range(len(word_list)):
         if label1[i] == 1:
             outputdata1.write(' ' + word_list[i])
@@ -245,6 +248,9 @@ def dele_none(label):
             label.pop()
         else:
             break
+    for i in range(len(label)):
+        if label[i] is None:
+            label[i] = 2
     return label
 
 
@@ -273,7 +279,7 @@ def main():
     test_dataset = test_dataset.batch(test_batch_size)
 
     """
-    这里有3中常用迭代器，one hsot iterator:这是最简单的迭代器
+    这里有3中常用迭代器，one hot iterator:这是最简单的迭代器
                      可初始化的迭代器：initializable_iterator
                      可重新初始化的迭代器：转换数据集见下
     """
@@ -318,11 +324,6 @@ def main():
     outputs, _, _ = tf.nn.static_bidirectional_rnn(stacked_fw_cell, stacked_lw_cell, inputs, dtype=tf.float32)
     output = tf.stack(outputs, axis=1)
     output = tf.reshape(tf.concat(output, 1), [-1, embedding_size * 2])
-
-    # # CRF层
-    # crf_weight = weight_variable([embedding_size * 2, embedding_size])
-    # crf_bias = bias_variable([embedding_size])
-    # middle_outputs = tf.nn.tanh(tf.matmul(output, crf_weight) + crf_bias)
 
     # output layer
     softmax_weight = weight_variable([embedding_size * 2, pouncation_num])
@@ -432,7 +433,7 @@ def main():
                         if acc > best_score:
                             num_epoch_no_improve = 0
                             best_score = acc
-                            saver.save(sess, join(save_dir, 'model.ckpt'), global_step=gstep)
+                            saver.save(sess, join(save_dir, 'model.ckpt'), global_step=gstep, write_meta_graph=False)
                             print('Dev Accuracy', acc, 'Step', step)
                         else:
                             num_epoch_no_improve += 1
@@ -460,13 +461,19 @@ def main():
                 writer.add_summary(summary_run, gstep)
                 print('Write Summaries to', summaries_dir)
             final_label_pre_result = search_bestresult(data_label_pre_result)
-            # P_value, R_value, F_value, R_value = compute_PRFvalues(final_label_pre_result, data_label_real_result)
+            P_value, R_value, F_value, R_value = compute_PRFvalues(final_label_pre_result, data_label_real_result)
             for i in range(len(data_word_result)):
-                data_word_result_final = list(filter(lambda x: x, data_word_result[i]))
-                y_predict_label_final = list(map(judge, final_label_pre_result[i]))
-                y_predict_label_final = dele_none(y_predict_label_final)
+                print('当前', i)
                 y_real_label_ = list(map(judge, data_label_real_result[i]))
                 y_real_label_ = dele_none(y_real_label_)
+                print(y_real_label_)
+                print(final_label_pre_result[i])
+                data_word_result_final = list(filter(lambda x: x, data_word_result[i]))
+                y_predict_label_final = list(map(judge, final_label_pre_result[i]))
+                print(y_predict_label_final)
+                y_predict_label_final = dele_none(y_predict_label_final)
+                print(y_predict_label_final)
+
                 word_deal = ' '.join(id2word[data_word_result_final].values)
                 if number_print < 100:
                     display_word(word_deal, y_predict_label_final, y_real_label_)

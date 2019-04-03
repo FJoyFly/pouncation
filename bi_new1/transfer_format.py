@@ -33,8 +33,8 @@ def search_txt(file_path, outfile):
                         #     middle = len(line) / 2
                         #     for i in range(middle):
                         #         if re.match('[，。:“”？！；]', line[middle + i]):
-                        #             f.write(line[:middle + i - 1] + '\n')
-                        #             f.write(line[middle + i:])
+                        #             f.write(line[:middle + i] + '\n')
+                        #             f.write(line[middle + i + 1:])
                         if len(line) < 256:
                             if len(line) > 32:
                                 word = re.findall('[，。:“”？！；]', line)
