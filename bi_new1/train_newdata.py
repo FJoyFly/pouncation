@@ -46,7 +46,7 @@ def get_data_label(word):
 
 data = []
 label = []
-
+print()
 # 获取数据集
 all_list_word = get_data(train_input_file_path)
 
@@ -57,7 +57,7 @@ for duan in all_list_word:
         data.append(da[0])
         label.append(da[1])
 print('data length ', len(data), 'Label length ', len(label))
-print('data example', data[0], )
+print('data example', data[0])
 print('label example', label[0])
 
 maxlen = 256  # 此处的maxlen设置的是每段古文默认的字数，若超过这个字数，则采取截断措施，不够则padding 0

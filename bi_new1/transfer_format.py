@@ -15,8 +15,9 @@ length = 0
 num_none = 0
 
 
+# 用来对文本进行迭代取其中内容
 def search_txt(file_path, outfile):
-    global length, all_length, num_none  # 用来控制文本中没有有标点符号的段落数
+    global length, num_none  # 用来控制文本中没有有标点符号的段落数
     filenames = os.listdir(file_path)
     f = codecs.open('/home/joyfly/桌面/宋书', 'a+', 'utf-8')
     new_filenames = filenames
@@ -28,6 +29,12 @@ def search_txt(file_path, outfile):
             if os.path.splitext(newdir)[1] == '.txt':
                 for line in open(newdir):
                     if line:
+                        # if 256 < len(line) <= 512:
+                        #     middle = len(line) / 2
+                        #     for i in range(middle):
+                        #         if re.match('[，。:“”？！；]', line[middle + i]):
+                        #             f.write(line[:middle + i - 1] + '\n')
+                        #             f.write(line[middle + i:])
                         if len(line) < 256:
                             if len(line) > 32:
                                 word = re.findall('[，。:“”？！；]', line)
@@ -64,10 +71,12 @@ def change_format(input_file, output_file):
         else:
             for i in new_data:
                 # 如果是所需要标点中的一个，使用的时UNICODE编码
-                if i == u'\u3002' or i == u'\uFF1F' or i == u'\uFF01' \
-                        or i == u'\uFF0C' or i == u'\uFF1B' or i == u'\uFF1A' \
-                        or i == u'\u201C' or i == u'\u201D' \
-                        or i == u'\u3001':
+                t = re.search('[，。：；‘’“”？！、]', i)
+                if t:
+                    # if i == u'\u3002' or i == u'\uFF1F' or i == u'\uFF01' \
+                    #         or i == u'\uFF0C' or i == u'\uFF1B' or i == u'\uFF1A' \
+                    #         or i == u'\u201C' or i == u'\u201D' \
+                    #         or i == u'\u3001':
                     output_data.write(' ' + i + ' ')
                 elif u'\u4E00' <= i <= u'\u9FEF':
                     output_data.write(i)
@@ -78,6 +87,7 @@ def change_format(input_file, output_file):
     output_data.close()
 
 
+# 大概计算各标签间转移概率
 def score_transfer(inputfile):
     num_of_length = np.zeros(6)
     data = codecs.open(inputfile, 'r', 'utf-8')
@@ -134,30 +144,29 @@ def character_tagging(input_file, output_file):
     output_data.close()
 
 
-# 计算次文本中总共不重复的字数
-def count_vocab(input_file):
-    '''
-
-    :param input_file: 初整理文本
-    :return:
-    '''
-    input_data = codecs.open(input_file, 'r', 'utf-8')
-    data_vocabu = []
-    for data_vo in input_data.readlines():
-        for i in data_vo:
-            if u'\u4E00' <= i <= u'\u9FEF' and i not in data_vocabu:
-                data_vocabu.extend(i)
-            else:
-                continue
-    return data_vocabu
+# # 计算次文本中总共不重复的字数
+# def count_vocab(input_file):
+#     '''
+#
+#     :param input_file: 初整理文本
+#     :return:
+#     '''
+#     input_data = codecs.open(input_file, 'r', 'utf-8')
+#     data_vocabu = []
+#     for data_vo in input_data.readlines():
+#         for i in data_vo:
+#             if u'\u4E00' <= i <= u'\u9FEF' and i not in data_vocabu:
+#                 data_vocabu.extend(i)
+#             else:
+#                 continue
+#     return data_vocabu
 
 
 print('正在查找当前目录下带标点txt文件\n')
 search_txt(file_path, outfile)
 print('正在将初始文件转换成所需格式文件\n')
 change_format(outfile, in_output_file)
-print('正在将格式文件中古文标注对应的标签')
-# count_vocab(in_output_file)
+print('正在将格式文件中古文标注对应的标签\n')
 character_tagging(in_output_file, output_file)
 print('段落总数：', all_length)
 print('超过固定长度的段落数：', length)

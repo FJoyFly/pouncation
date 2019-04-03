@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fa1c2ce1-3c25-486e-965f-f01e1c544c86" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/beta_test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/debug.py" beforeDir="false" afterPath="$PROJECT_DIR$/debug.py" afterDir="false" />
@@ -17,20 +18,21 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/bi_new1$debug.coverage" NAME="debug Coverage Results" MODIFIED="1554206913907" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/bi_new1$train_newdata.coverage" NAME="train_newdata Coverage Results" MODIFIED="1554189667610" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/bi_new1$debug.coverage" NAME="debug Coverage Results" MODIFIED="1554212942613" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/bi_new1$beta_test.coverage" NAME="beta_test Coverage Results" MODIFIED="1554273695560" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/bi_new1$train_newdata.coverage" NAME="train_newdata Coverage Results" MODIFIED="1554274151270" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/bi_new1$attmpt_RNN.coverage" NAME="attmpt_RNN Coverage Results" MODIFIED="1553577989368" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/bi_new1$other.coverage" NAME="other Coverage Results" MODIFIED="1553774291955" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/bi_new1$test.coverage" NAME="test Coverage Results" MODIFIED="1554207163005" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/bi_new1$transfer_format.coverage" NAME="transfer_format Coverage Results" MODIFIED="1554189652010" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/bi_new1$test.coverage" NAME="test Coverage Results" MODIFIED="1554261467253" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/bi_new1$transfer_format.coverage" NAME="transfer_format Coverage Results" MODIFIED="1554261373758" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/transfer_format.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="528">
-              <caret line="45" column="30" lean-forward="true" selection-start-line="45" selection-start-column="30" selection-end-line="45" selection-end-column="30" />
+            <state relative-caret-position="330">
+              <caret line="27" column="34" lean-forward="true" selection-start-line="27" selection-start-column="34" selection-end-line="27" selection-end-column="34" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -38,11 +40,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/train_newdata.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2068">
-              <caret line="100" column="52" lean-forward="true" selection-start-line="100" selection-start-column="52" selection-end-line="100" selection-end-column="52" />
+            <state relative-caret-position="374">
+              <caret line="26" column="24" lean-forward="true" selection-start-line="26" selection-start-column="24" selection-end-line="26" selection-end-column="24" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -50,11 +52,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="455">
-              <caret line="451" lean-forward="true" selection-start-line="451" selection-end-line="451" />
+            <state relative-caret-position="-1210">
+              <caret line="41" column="23" selection-start-line="41" selection-start-column="23" selection-end-line="41" selection-end-column="23" />
               <folding>
                 <element signature="e#1#24#0" expanded="true" />
               </folding>
@@ -65,7 +67,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/other.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
+            <state relative-caret-position="66">
+              <caret line="3" lean-forward="true" selection-start-line="3" selection-end-line="3" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -76,8 +79,20 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/debug.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="176">
-              <caret line="8" column="36" selection-start-line="8" selection-start-column="36" selection-end-line="8" selection-end-column="36" />
+            <state relative-caret-position="326">
+              <caret line="15" column="32" lean-forward="true" selection-start-line="15" selection-start-column="32" selection-end-line="15" selection-end-column="32" />
+              <folding>
+                <element signature="e#0#23#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/beta_test.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="154">
+              <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
               <folding>
                 <element signature="e#0#23#0" expanded="true" />
               </folding>
@@ -102,18 +117,19 @@
       <list>
         <option value="$PROJECT_DIR$/attmpt_RNN.py" />
         <option value="$USER_HOME$/tensorflow/venv/lib/python3.6/site-packages/tensorflow/_api/v1/nn/__init__.py" />
-        <option value="$PROJECT_DIR$/transfer_format.py" />
-        <option value="$PROJECT_DIR$/train_newdata.py" />
         <option value="$PROJECT_DIR$/other.py" />
         <option value="$PROJECT_DIR$/debug.py" />
         <option value="$PROJECT_DIR$/test.py" />
+        <option value="$PROJECT_DIR$/train_newdata.py" />
+        <option value="$PROJECT_DIR$/transfer_format.py" />
+        <option value="$PROJECT_DIR$/beta_test.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="993" />
+  <component name="ProjectFrameBounds" extendedState="7">
+    <option name="x" value="67" />
     <option name="y" value="25" />
-    <option name="width" value="927" />
+    <option name="width" value="1095" />
     <option name="height" value="1055" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -160,7 +176,29 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.test">
+  <component name="RunManager" selected="Python.train_newdata">
+    <configuration name="beta_test" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="bi_new1" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/beta_test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="debug" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="bi_new1" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -175,28 +213,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/debug.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="other" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="bi_new1" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/other.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -274,18 +290,18 @@
     </configuration>
     <list>
       <item itemvalue="Python.debug" />
-      <item itemvalue="Python.other" />
       <item itemvalue="Python.test" />
       <item itemvalue="Python.train_newdata" />
       <item itemvalue="Python.transfer_format" />
+      <item itemvalue="Python.beta_test" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.test" />
-        <item itemvalue="Python.debug" />
         <item itemvalue="Python.train_newdata" />
+        <item itemvalue="Python.beta_test" />
+        <item itemvalue="Python.test" />
         <item itemvalue="Python.transfer_format" />
-        <item itemvalue="Python.other" />
+        <item itemvalue="Python.debug" />
       </list>
     </recent_temporary>
   </component>
@@ -313,12 +329,12 @@
       <workItem from="1553926969644" duration="27859000" />
       <workItem from="1553996480966" duration="52554000" />
       <workItem from="1554093942662" duration="35785000" />
-      <workItem from="1554174332696" duration="17030000" />
+      <workItem from="1554174332696" duration="51943000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="265368000" />
+    <option name="totallyTimeSpent" value="300281000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -333,12 +349,12 @@
     <frame x="67" y="25" width="1853" height="1055" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.10969529" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.016620498" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.3091892" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.28216216" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.499723" weight="0.3372973" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -358,16 +374,6 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/other.py</url>
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$USER_HOME$/tensorflow/venv/lib/python3.6/codecs.py">
@@ -482,13 +488,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/tensorflow/venv/lib/python3.6/site-packages/tensorflow/python/framework/ops.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="263">
-          <caret line="1661" selection-start-line="1661" selection-end-line="1661" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/tensorflow/venv/lib/python3.6/site-packages/tensorflow/python/util/dispatch.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="197">
@@ -525,29 +524,45 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/train_newdata.py">
+    <entry file="file://$USER_HOME$/tensorflow/venv/lib/python3.6/site-packages/tensorflow/python/summary/writer/writer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2068">
-          <caret line="100" column="52" lean-forward="true" selection-start-line="100" selection-start-column="52" selection-end-line="100" selection-end-column="52" />
-          <folding>
-            <element signature="e#0#9#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="204">
+          <caret line="126" selection-start-line="126" selection-end-line="126" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/transfer_format.py">
+    <entry file="file://$USER_HOME$/tensorflow/venv/lib/python3.6/site-packages/tensorflow/python/ops/variable_scope.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="528">
-          <caret line="45" column="30" lean-forward="true" selection-start-line="45" selection-start-column="30" selection-end-line="45" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#13#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-468">
+          <caret line="1447" column="22" lean-forward="true" selection-start-line="1447" selection-start-column="22" selection-end-line="1447" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/tensorflow/venv/lib/python3.6/site-packages/tensorflow/contrib/crf/python/ops/crf.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="192">
+          <caret line="256" column="57" lean-forward="true" selection-start-line="256" selection-start-column="57" selection-end-line="256" selection-end-column="57" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/tensorflow/venv/lib/python3.6/site-packages/tensorflow/python/framework/ops.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="192">
+          <caret line="1658" selection-start-line="1658" selection-end-line="1658" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/tensorflow/venv/lib/python3.6/site-packages/tensorflow/python/data/ops/iterator_ops.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="212">
+          <caret line="413" selection-start-line="413" selection-end-line="413" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/other.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
+        <state relative-caret-position="66">
+          <caret line="3" lean-forward="true" selection-start-line="3" selection-end-line="3" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
@@ -556,20 +571,50 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/debug.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="8" column="36" selection-start-line="8" selection-start-column="36" selection-end-line="8" selection-end-column="36" />
+        <state relative-caret-position="326">
+          <caret line="15" column="32" lean-forward="true" selection-start-line="15" selection-start-column="32" selection-end-line="15" selection-end-column="32" />
           <folding>
             <element signature="e#0#23#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/beta_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="154">
+          <caret line="7" lean-forward="true" selection-start-line="7" selection-end-line="7" />
+          <folding>
+            <element signature="e#0#23#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/transfer_format.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="27" column="34" lean-forward="true" selection-start-line="27" selection-start-column="34" selection-end-line="27" selection-end-column="34" />
+          <folding>
+            <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="455">
-          <caret line="451" lean-forward="true" selection-start-line="451" selection-end-line="451" />
+        <state relative-caret-position="-1210">
+          <caret line="41" column="23" selection-start-line="41" selection-start-column="23" selection-end-line="41" selection-end-column="23" />
           <folding>
             <element signature="e#1#24#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/train_newdata.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="26" column="24" lean-forward="true" selection-start-line="26" selection-start-column="24" selection-end-line="26" selection-end-column="24" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>

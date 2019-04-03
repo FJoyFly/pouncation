@@ -12,7 +12,10 @@ if os.path.exists(path):
     print('yes')
 else:
     print('No')
-
+i = '？'
+t = re.match(r'[，。：；‘’“”？！]', i)
+if t:
+    print(i)
 # for i in range(3):
 #     now_score_nine[i] += score_three[i]
 #     now_score_nine[i + 3] += score_three[i + 1]

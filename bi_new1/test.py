@@ -9,7 +9,6 @@ import os
 import codecs
 import shutil
 
-
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
@@ -18,6 +17,7 @@ train_batch_size = 256
 dev_batch_size = 256
 test_batch_size = 256
 embedding_size = 256
+batch_size = 256
 layer_num = 2
 pouncation_num = 7
 learning_rate = 0.01
@@ -161,6 +161,7 @@ def judge(x):
         return x
 
 
+# 结果评估
 def compute_PRFvalues(label_1, label_2):
     """
 
@@ -191,7 +192,23 @@ def compute_PRFvalues(label_1, label_2):
     A_value = format((real_nopoun + real_poun) / (real_nopoun + real_poun + fail_nopoun + fail_poun))
     return P_value, R_value, F_value, A_value
 
+#
+# def feed_sequences(word):
+#     sequence_lengths = []
+#     for seq in word.eval():
+#         number = 0
+#         length = len(seq)
+#         for i in range(length):
+#             if seq[length - i - 1] == 0:
+#                 number += 1
+#             else:
+#                 break
+#         final_length = length - number
+#         sequence_lengths.append(final_length)
+#     return sequence_lengths
 
+
+# 显示对比解结果
 def display_word(word, label1, label2):
     '''
 
@@ -200,8 +217,8 @@ def display_word(word, label1, label2):
     :param label2: 该段古文的真实标签
     :return: 打印出对比结果
     '''
-    outputdata1 = codecs.open(join(outputs_path, '原始'), 'w', 'utf-8')
-    outputdata2 = codecs.open(join(outputs_path, '预测'), 'w', 'utf-8')
+    outputdata1 = codecs.open(join(outputs_path, '原始'), 'a+', 'utf-8')
+    outputdata2 = codecs.open(join(outputs_path, '预测'), 'a+', 'utf-8')
     word_list = word.split(' ')
     for i in range(len(word_list)):
         if label1[i] == 1:
@@ -302,21 +319,33 @@ def main():
     output = tf.stack(outputs, axis=1)
     output = tf.reshape(tf.concat(output, 1), [-1, embedding_size * 2])
 
+    # # CRF层
+    # crf_weight = weight_variable([embedding_size * 2, embedding_size])
+    # crf_bias = bias_variable([embedding_size])
+    # middle_outputs = tf.nn.tanh(tf.matmul(output, crf_weight) + crf_bias)
+
     # output layer
     softmax_weight = weight_variable([embedding_size * 2, pouncation_num])
     softmax_bias = bias_variable([pouncation_num])
     begin_pre_labels = tf.matmul(output, softmax_weight) + softmax_bias
+    begin_pre_labels_reshape = tf.reshape(begin_pre_labels, (-1, sequence_length, 7))
 
     # 原始每段句子的标注结果标签概率
-    begin_pre_labels_reshape = tf.reshape(begin_pre_labels, (-1, sequence_length, 7))
 
     pre_labels_reshape = tf.nn.softmax(begin_pre_labels_reshape, axis=-1)
 
     y_label_pre = tf.cast(tf.argmax(pre_labels_reshape, axis=-1), tf.int32)
 
+    # 真实标签
     y_label_reshape = tf.reshape(data_label, (-1, sequence_length, 7))
 
     y_label_real = tf.cast(tf.argmax(y_label_reshape, axis=-1), tf.int32)
+
+    # # CRF层
+    # log_likelihood, transition_params = tf.contrib.crf.crf_log_likelihood(
+    #     begin_pre_labels_reshape, y_label_real, seq)
+    #
+    # loss = tf.reduce_mean(-log_likelihood)
 
     # prediction
     correct_prediction = tf.equal(y_label_pre, y_label_real)
@@ -345,9 +374,10 @@ def main():
     train_step_op = tf.train.RMSPropOptimizer(learning_rate).minimize(cross_entropy, global_step)
 
     # Saver
-    saver = tf.train.Saver(max_to_keep=10)
+    saver = tf.train.Saver(max_to_keep=1)
 
     sess = tf.InteractiveSession()
+
     sess.run(tf.global_variables_initializer())
 
     # summary
@@ -367,6 +397,7 @@ def main():
 
     best_score = 0
     num_epoch_no_improve = 0
+    # feed sequence
 
     if isTrain:
         print("Traing......")
@@ -375,8 +406,8 @@ def main():
             tf.train.global_step(sess, global_step_tensor=global_step)
             sess.run(train_initial_op)
             for step in range(int(train_step)):
-                labels_pre_h, loss, acc, gstep, _ = sess.run(
-                    [begin_pre_labels_reshape, cross_entropy, accuracy, global_step, train_step_op],
+                summary_run, labels_pre_h, loss, acc, gstep, _ = sess.run(
+                    [summaries, begin_pre_labels_reshape, cross_entropy, accuracy, global_step, train_step_op],
                     feed_dict={keep_prob: 1})
                 # smrs, loss, acc, gstep, _ = sess.run([summaries, cross_entropy, accuracy, global_step, train_step_op],
                 #                                      feed_dict={keep_prob: 1})
@@ -385,21 +416,23 @@ def main():
                     print('Global Step', gstep, 'Step', step, 'Trian loss', loss, 'Train Accuracy', acc)
 
                 if gstep % steps_per_sumary == 0:
-                    summary_run = sess.run([summaries], feed_dict={keep_prob: 1})
                     writer.add_summary(summary_run, gstep)
                     print('Write Summaries to', summaries_dir)
 
             if epoch % epochs_per_dev == 0:
                 print('正在验证中：')
                 sess.run(dev_initial_op)
+                print('sessing')
                 for step in range(int(dev_step)):
+                    print('step', step)
                     # 此处使用的minibatch梯度下降,将数据集分成train_step份.在每一次小batch中更新参数
                     if step % steps_per_print == 0:
                         acc = sess.run(accuracy, feed_dict={keep_prob: 1})
+                        print('running')
                         if acc > best_score:
                             num_epoch_no_improve = 0
                             best_score = acc
-                            saver.save(sess, save_dir + 'model.ckpt', global_step=gstep)
+                            saver.save(sess, join(save_dir, 'model.ckpt'), global_step=gstep)
                             print('Dev Accuracy', acc, 'Step', step)
                         else:
                             num_epoch_no_improve += 1
@@ -418,12 +451,14 @@ def main():
             saver.restore(sess, last_ckpt)
         print('Restore From', last_ckpt)
         sess.run(test_initial_op)
-
         for step in range(int(test_step)):
-            data_word_result, data_label_pre_result, data_label_real_result, acc = sess.run(
-                [data_word, begin_pre_labels_reshape, y_label_real, accuracy],
+            summary_run, data_word_result, data_label_pre_result, data_label_real_result, acc = sess.run(
+                [summaries, data_word, begin_pre_labels_reshape, y_label_real, accuracy],
                 feed_dict={keep_prob: 1})
             print("test step", step, '未处理前Accuracy', acc)
+            if step % steps_per_sumary == 0:
+                writer.add_summary(summary_run, gstep)
+                print('Write Summaries to', summaries_dir)
             final_label_pre_result = search_bestresult(data_label_pre_result)
             # P_value, R_value, F_value, R_value = compute_PRFvalues(final_label_pre_result, data_label_real_result)
             for i in range(len(data_word_result)):
@@ -433,9 +468,6 @@ def main():
                 y_real_label_ = list(map(judge, data_label_real_result[i]))
                 y_real_label_ = dele_none(y_real_label_)
                 word_deal = ' '.join(id2word[data_word_result_final].values)
-                print(word_deal, len(word_deal))
-                print(y_predict_label_final, len(y_predict_label_final))
-                print(y_real_label_, len(y_real_label_))
                 if number_print < 100:
                     display_word(word_deal, y_predict_label_final, y_real_label_)
                     number_print += 1
