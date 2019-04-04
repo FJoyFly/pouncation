@@ -2,6 +2,7 @@ import tensorflow as tf
 import pickle
 import codecs
 from test import search_bestresult, judge, dele_none
+import numpy as np
 
 sequence_maxlen = 256
 
@@ -17,14 +18,15 @@ def load_data():
     :return: Arrays
     """
     with open(source_data, 'rb') as f:
+        tag2id = pickle.load(f)
+        id2tag = pickle.load(f)
         word2id = pickle.load(f)
         id2word = pickle.load(f)
-        id2tag = pickle.load(f)
-        tag2id = pickle.load(f)
-        return word2id, id2word, id2tag, tag2id
+        return tag2id, id2tag, word2id, id2word
 
 
-word2id, id2word, id2tag, tag2id = load_data()
+tag2id, id2tag, word2id, id2word = load_data()
+print(word2id)
 
 
 def word_trans(word):
@@ -63,10 +65,16 @@ for line in new_data:
 
 data_word = list(map(lambda x: word_trans(x), data_list))
 
+for i in data_word:
+    print(i)
 test_word = tf.data.Dataset.from_tensor_slices(data_word)
 iterator = test_word.make_one_shot_iterator()
 
-inputs = iterator.get_next()
+try:
+    inputs = iterator.get_next()
+    list = inputs.get_shape().as_list()
+except tf.errors.OutOfRangeError:
+    print('已经取完')
 
 sess = tf.Session()
 

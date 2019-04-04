@@ -21,7 +21,8 @@ batch_size = 256
 layer_num = 2
 pouncation_num = 7
 learning_rate = 0.01
-isTrain = False
+isTrain = True
+# flag = True
 epochs = 10
 summaries_dir = '/home/joyfly/桌面/summary/'
 save_dir = '/home/joyfly/桌面/ckpt/'
@@ -32,6 +33,7 @@ epochs_per_dev = 2
 num_epoch_no_improve_bear = 10
 sequence_length = 256
 lamda = 0.7
+three_batchsize = 0
 
 
 def load_data():
@@ -255,14 +257,19 @@ def dele_none(label):
 
 
 def main():
-    global learning_rate
+    global learning_rate, three_batchsize, flag
     # 加载数据
     data_word, data_label, word2id, id2word, tag2id, id2tag = load_data()
     # 分割数据集
     train_word, train_label, dev_word, dev_label, test_word, test_label = get_data(data_word, data_label)
     train_step = math.ceil(train_word.shape[0] / train_batch_size)
+    print(train_step)
+    train_restseq_num = train_word.shape[0] - train_batch_size * (train_step - 1)
+    print(train_restseq_num)
     dev_step = math.ceil(dev_word.shape[0] / dev_batch_size)
+    dev_restseq_num = dev_word.shape[0] - dev_batch_size * (dev_step - 1)
     test_step = math.ceil(test_word.shape[0] / test_batch_size)
+    test_restseq_num = test_word.shape[0] - test_batch_size * (test_step - 1)
     vocab_size = len(word2id) + 1
     print("vocabulary size:", vocab_size)
 
@@ -271,6 +278,7 @@ def main():
     # 各数据集batch
     train_dataset = tf.data.Dataset.from_tensor_slices((train_word, train_label))
     train_dataset = train_dataset.batch(train_batch_size)
+    print(train_dataset)
 
     dev_dataset = tf.data.Dataset.from_tensor_slices((dev_word, dev_label))
     dev_dataset = dev_dataset.batch(dev_batch_size)
@@ -281,7 +289,7 @@ def main():
     """
     这里有3中常用迭代器，one hot iterator:这是最简单的迭代器
                      可初始化的迭代器：initializable_iterator
-                     可重新初始化的迭代器：转换数据集见下
+                     可重新初始化的迭代器：转换数据集见下,这种数据集每次更换iterator时,数据会重头开始
     """
 
     # 构造一个通用迭代器，并且对训练集，验证集，测试集初始化
@@ -293,13 +301,21 @@ def main():
 
     # Input layer
     data_word, data_label = iterator.get_next()
+    print('------------------------------------------------')
+
+    # batchsize_num = tf.placeholder(tf.int32, [])
+    # if flag:
+    #     seq = np.full(batch_size, sequence_length, dtype=np.int32)
+    # else:
+    #     seq = np.full(three_batchsize, sequence_length, dtype=np.int32)
+    # seq = np.linspace(256, 256, 256)
 
     # embedding layer
     embeddings = tf.Variable(tf.random_uniform([vocab_size, embedding_size], -1, 1), dtype=tf.float32)
     inputs = tf.nn.embedding_lookup(embeddings, data_word)
 
     # 梯度下降
-    keep_prob = tf.placeholder(tf.float32, [])
+    # keep_prob = tf.placeholder(tf.float32, [])
 
     # 采用双向GRU的Rnn
     gru_fw_cell = tf.nn.rnn_cell.GRUCell(num_units=embedding_size)
@@ -326,8 +342,12 @@ def main():
     output = tf.reshape(tf.concat(output, 1), [-1, embedding_size * 2])
 
     # output layer
-    softmax_weight = weight_variable([embedding_size * 2, pouncation_num])
-    softmax_bias = bias_variable([pouncation_num])
+    with tf.name_scope('weight'):
+        softmax_weight = weight_variable([embedding_size * 2, pouncation_num])
+        tf.summary.histogram('weight', softmax_weight)
+    with tf.name_scope('bias'):
+        softmax_bias = bias_variable([pouncation_num])
+        tf.summary.histogram('bias', softmax_bias)
     begin_pre_labels = tf.matmul(output, softmax_weight) + softmax_bias
     begin_pre_labels_reshape = tf.reshape(begin_pre_labels, (-1, sequence_length, 7))
 
@@ -346,7 +366,7 @@ def main():
     # log_likelihood, transition_params = tf.contrib.crf.crf_log_likelihood(
     #     begin_pre_labels_reshape, y_label_real, seq)
     #
-    # loss = tf.reduce_mean(-log_likelihood)
+    # cross_entropy = tf.reduce_mean(-log_likelihood)
 
     # prediction
     correct_prediction = tf.equal(y_label_pre, y_label_real)
@@ -358,21 +378,21 @@ def main():
 
     print('Prediction', correct_prediction, 'Accuracy', accuracy)
 
-    # loss
+    # loss softmax的损失函数
     with tf.name_scope('loss'):
         cross_entropy = tf.reduce_mean(
             tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y_label_real,
                                                            logits=begin_pre_labels_reshape + 1e-10))
         tf.summary.scalar('loss', cross_entropy)
 
-    # train
+    # train控制梯度
     # optimizer = tf.train.AdamOptimizer(learning_rate, beta1=0.5)
     # grads = optimizer.compute_gradients(cross_entropy)
     # for i, (g, v) in enumerate(grads):
     #     if g is not None:
     #         grads[i] = (tf.clip_by_norm(g, 5), v)  # 阈值这里设为5
     # train_step_op = optimizer.apply_gradients(grads, global_step)
-    train_step_op = tf.train.RMSPropOptimizer(learning_rate).minimize(cross_entropy, global_step)
+    train_step_op = tf.train.AdamOptimizer(learning_rate).minimize(cross_entropy, global_step)
 
     # Saver
     saver = tf.train.Saver(max_to_keep=1)
@@ -400,16 +420,23 @@ def main():
     num_epoch_no_improve = 0
     # feed sequence
 
+    # ---------------------------------------
+    # 名字不能重复使用 尽量避免因同名带来的危险
+    # ---------------------------------------
     if isTrain:
         print("Traing......")
         for epoch in range(epochs):
             print('当前轮次为：', epoch)
             tf.train.global_step(sess, global_step_tensor=global_step)
-            sess.run(train_initial_op)
+            sess.run(train_initial_op, feed_dict={})
             for step in range(int(train_step)):
                 summary_run, labels_pre_h, loss, acc, gstep, _ = sess.run(
-                    [summaries, begin_pre_labels_reshape, cross_entropy, accuracy, global_step, train_step_op],
-                    feed_dict={keep_prob: 1})
+                    [summaries, begin_pre_labels_reshape, cross_entropy, accuracy, global_step,
+                     train_step_op])
+                # if step == int(train_step) - 1:
+                #     flag = 0
+                #     three_batchsize = train_restseq_num
+
                 # smrs, loss, acc, gstep, _ = sess.run([summaries, cross_entropy, accuracy, global_step, train_step_op],
                 #                                      feed_dict={keep_prob: 1})
                 print("当前batch:", step, 'loss=', loss, 'accuracy=', acc)
@@ -419,6 +446,7 @@ def main():
                 if gstep % steps_per_sumary == 0:
                     writer.add_summary(summary_run, gstep)
                     print('Write Summaries to', summaries_dir)
+            # flag = 1
 
             if epoch % epochs_per_dev == 0:
                 print('正在验证中：')
@@ -428,7 +456,10 @@ def main():
                     print('step', step)
                     # 此处使用的minibatch梯度下降,将数据集分成train_step份.在每一次小batch中更新参数
                     if step % steps_per_print == 0:
-                        acc = sess.run(accuracy, feed_dict={keep_prob: 1})
+                        acc = sess.run(accuracy)
+                        # if step == int(dev_step) - 1:
+                        #     flag = 0
+                        #     three_batchsize = dev_restseq_num
                         print('running')
                         if acc > best_score:
                             num_epoch_no_improve = 0
@@ -441,6 +472,7 @@ def main():
                             if num_epoch_no_improve > num_epoch_no_improve_bear:
                                 Flag = 1
                                 break
+                # flag = 1
             if Flag:
                 break
     else:
@@ -454,12 +486,15 @@ def main():
         sess.run(test_initial_op)
         for step in range(int(test_step)):
             summary_run, data_word_result, data_label_pre_result, data_label_real_result, acc = sess.run(
-                [summaries, data_word, begin_pre_labels_reshape, y_label_real, accuracy],
-                feed_dict={keep_prob: 1})
+                [summaries, data_word, begin_pre_labels_reshape, y_label_real, accuracy])
+            # if step == int(test_step) - 1:
+            #     flag = 0
+            #     three_batchsize = test_restseq_num
             print("test step", step, '未处理前Accuracy', acc)
             if step % steps_per_sumary == 0:
                 writer.add_summary(summary_run, gstep)
                 print('Write Summaries to', summaries_dir)
+            # final_label_pre_result  = tf.contrib.crf.
             final_label_pre_result = search_bestresult(data_label_pre_result)
             P_value, R_value, F_value, R_value = compute_PRFvalues(final_label_pre_result, data_label_real_result)
             for i in range(len(data_word_result)):

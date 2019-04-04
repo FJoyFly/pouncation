@@ -6,16 +6,11 @@ import re
 import os.path
 import shutil
 
-path = '/home/joyfly/桌面/summary/test'
-if os.path.exists(path):
-    shutil.rmtree(path)
-    print('yes')
-else:
-    print('No')
-i = '？'
-t = re.match(r'[，。：；‘’“”？！]', i)
-if t:
-    print(i)
+batchsize_num = tf.placeholder(tf.int32, [])
+seq = np.full(batchsize_num, 2, dtype=np.int32)
+
+with tf.Session() as sess:
+    print(sess.run([seq], feed_dict={batchsize_num: 3}))
 # for i in range(3):
 #     now_score_nine[i] += score_three[i]
 #     now_score_nine[i + 3] += score_three[i + 1]
