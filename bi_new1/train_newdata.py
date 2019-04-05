@@ -122,11 +122,11 @@ with open(join(path, "all_data.pkl"), 'wb') as f:
     pickle.dump(id2word, f)
     pickle.dump(tag2id, f)
     pickle.dump(id2tag, f)
-print('Pickle Finished!')
+print('Pickle1 Finished!')
 
 with open(join(path, "word2id_data.pkl"), 'wb') as f:
     pickle.dump(tag2id, f)
     pickle.dump(id2tag, f)
     pickle.dump(word2id, f)
     pickle.dump(id2word, f)
-print('Pickle Finished!')
+print('Pickle2 Finished!')

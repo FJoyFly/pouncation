@@ -5,12 +5,17 @@ import copy
 import re
 import os.path
 import shutil
+import matplotlib.pyplot as plt
 
-batchsize_num = tf.placeholder(tf.int32, [])
-seq = np.full(batchsize_num, 2, dtype=np.int32)
+x = [1, 2, 3, 4]
+y = [9, 8, 7, 6]
+q = [1, 2, 3, 4]
+plt.plot(q, y)
+plt.scatter(q, y)
+plt.plot(q, x)
+plt.scatter(q, x)
+plt.savefig('/home/joyfly/桌面/image.png')
 
-with tf.Session() as sess:
-    print(sess.run([seq], feed_dict={batchsize_num: 3}))
 # for i in range(3):
 #     now_score_nine[i] += score_three[i]
 #     now_score_nine[i + 3] += score_three[i + 1]

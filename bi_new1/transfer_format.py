@@ -3,6 +3,7 @@ import os
 import os.path
 import re
 import numpy as np
+import math
 
 file_path = '/home/joyfly/桌面/全部/数据'
 outfile = '/home/joyfly/桌面/宋书'
@@ -12,14 +13,14 @@ output_file = '/home/joyfly/桌面/副本2'
 length_526 = 0
 all_length = 0
 length = 0
-num_none = 0
+num_word_all = 0
 
 
 # 用来对文本进行迭代取其中内容
 def search_txt(file_path, outfile):
-    global length, num_none  # 用来控制文本中没有有标点符号的段落数
+    global length  # 用来控制文本中没有有标点符号的段落数
     filenames = os.listdir(file_path)
-    f = codecs.open('/home/joyfly/桌面/宋书', 'a+', 'utf-8')
+    f = codecs.open(outfile, 'a+', 'utf-8')
     new_filenames = filenames
     for filename in new_filenames:
         newdir = os.path.join(file_path, filename)
@@ -29,26 +30,22 @@ def search_txt(file_path, outfile):
             if os.path.splitext(newdir)[1] == '.txt':
                 for line in open(newdir):
                     if line:
-                        # if 256 < len(line) <= 512:
-                        #     middle = len(line) / 2
-                        #     for i in range(middle):
-                        #         if re.match('[，。:“”？！；]', line[middle + i]):
-                        #             f.write(line[:middle + i] + '\n')
-                        #             f.write(line[middle + i + 1:])
-                        if len(line) < 256:
-                            if len(line) > 32:
-                                word = re.findall('[，。:“”？！；]', line)
-                                if word is None:
-                                    num_none += 1
-                                    if num_none > 5:
-                                        break
-                                    continue
-                                num_none = 0
+                        if len(line) > 32:  # 对原始文段清洗一遍,判断是否是带有标点的段落.是,则加入
+                            word = re.findall('[，。:“”？！；]', line)
+                            if word is None:
+                                break
+                            if 256 < len(line) <= 512:
+                                middle = len(line) // 2
+                                for i in range(middle):
+                                    if re.match('[，。:“”？！；]', line[middle + i]):
+                                        f.write(line[:middle + i] + '\n')
+                                        f.write(line[middle + i + 1:])
+                            elif len(line) < 256:
                                 f.write(line)
-                            else:
-                                num_none = 0
-                                f.write(line)
-                f.write('\n')
+
+                        else:
+                            f.write(line)
+                        f.write('\n')
         elif os.path.isdir(newdir):
             search_txt(new_filenames, outfile)
     f.close()
@@ -119,12 +116,14 @@ def character_tagging(input_file, output_file):
     :param output_file: 终整理文本
     :return: 已标注文本
     '''
+    global num_word_all
     input_data = codecs.open(input_file, 'r', 'utf-8')
     output_data = codecs.open(output_file, 'w', 'utf-8')
     for line in input_data.readlines():
         word_list = line.strip().split()  # 这里读取数据时按\n进行的
         for word in word_list:
             if u'\u4E00' <= word <= u'\u9FEF':
+                num_word_all += 1
                 if len(word) == 1:
                     output_data.write(word + "/S" + '  ')
                 else:
@@ -172,3 +171,4 @@ print('段落总数：', all_length)
 print('超过固定长度的段落数：', length)
 num_of_lenght = score_transfer(in_output_file)
 print('各句子长度数:', num_of_lenght)
+print(num_word_all)

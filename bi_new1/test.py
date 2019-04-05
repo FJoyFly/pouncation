@@ -8,22 +8,23 @@ import heapq
 import os
 import codecs
 import shutil
+import matplotlib.pyplot as plt
+import matplotlib
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 source_data = '/home/joyfly/桌面/all_data.pkl'
-train_batch_size = 256
-dev_batch_size = 256
-test_batch_size = 256
+train_batch_size = 128
+dev_batch_size = 128
+test_batch_size = 128
 embedding_size = 256
-batch_size = 256
+batch_size = 128
 layer_num = 2
 pouncation_num = 7
-learning_rate = 0.01
-isTrain = True
-# flag = True
-epochs = 10
+learning_rate = 0.001
+isTrain = False
+epochs = 500
 summaries_dir = '/home/joyfly/桌面/summary/'
 save_dir = '/home/joyfly/桌面/ckpt/'
 outputs_path = '/home/joyfly/桌面/'
@@ -33,7 +34,7 @@ epochs_per_dev = 2
 num_epoch_no_improve_bear = 10
 sequence_length = 256
 lamda = 0.7
-three_batchsize = 0
+zhfont1 = matplotlib.font_manager.FontProperties(fname="/home/joyfly/下载/SimHei.ttf")
 
 
 def load_data():
@@ -175,9 +176,10 @@ def compute_PRFvalues(label_1, label_2):
     fail_poun = 0
     fail_nopoun = 0
     real_nopoun = 0
-    for duan1, duan2 in label_1, label_2:
+
+    for duan1, duan2 in zip(label_1, label_2):
         for i in range(len(duan1)):
-            if -1 < duan2[i] < 6:
+            if -1 < duan2[i] < 6 and -1 < duan1[i] < 6:
                 if duan1[i] < 2 and duan2[i] < 2:
                     real_poun += 1
                 elif duan1[i] < 2 and duan2[i] > 1:
@@ -188,10 +190,10 @@ def compute_PRFvalues(label_1, label_2):
                     real_nopoun += 1
             else:
                 break
-    P_value = format(real_poun / (real_poun + fail_poun), '0.3f')
-    R_value = format(real_poun / (real_poun + fail_nopoun), '0.3f')
-    F_value = format(2 * P_value * R_value / (P_value + R_value), '0.3f')
-    A_value = format((real_nopoun + real_poun) / (real_nopoun + real_poun + fail_nopoun + fail_poun))
+    P_value = round(real_poun / (real_poun + fail_poun), 3)
+    R_value = round(real_poun / (real_poun + fail_nopoun), 3)
+    F_value = round(2 * P_value * R_value / (P_value + R_value), 3)
+    A_value = round((real_nopoun + real_poun) / (real_nopoun + real_poun + fail_nopoun + fail_poun), 3)
     return P_value, R_value, F_value, A_value
 
 
@@ -262,14 +264,13 @@ def main():
     data_word, data_label, word2id, id2word, tag2id, id2tag = load_data()
     # 分割数据集
     train_word, train_label, dev_word, dev_label, test_word, test_label = get_data(data_word, data_label)
-    train_step = math.ceil(train_word.shape[0] / train_batch_size)
+    train_step = math.floor(train_word.shape[0] / train_batch_size)
     print(train_step)
-    train_restseq_num = train_word.shape[0] - train_batch_size * (train_step - 1)
-    print(train_restseq_num)
-    dev_step = math.ceil(dev_word.shape[0] / dev_batch_size)
-    dev_restseq_num = dev_word.shape[0] - dev_batch_size * (dev_step - 1)
-    test_step = math.ceil(test_word.shape[0] / test_batch_size)
-    test_restseq_num = test_word.shape[0] - test_batch_size * (test_step - 1)
+    # train_restseq_num = train_word.shape[0] - train_batch_size * (train_step - 1)
+    dev_step = math.floor(dev_word.shape[0] / dev_batch_size)
+    # dev_restseq_num = dev_word.shape[0] - dev_batch_size * (dev_step - 1)
+    test_step = math.floor(test_word.shape[0] / test_batch_size)
+    # test_restseq_num = test_word.shape[0] - test_batch_size * (test_step - 1)
     vocab_size = len(word2id) + 1
     print("vocabulary size:", vocab_size)
 
@@ -277,14 +278,14 @@ def main():
 
     # 各数据集batch
     train_dataset = tf.data.Dataset.from_tensor_slices((train_word, train_label))
-    train_dataset = train_dataset.batch(train_batch_size)
+    train_dataset = train_dataset.batch(train_batch_size, drop_remainder=True)
     print(train_dataset)
 
     dev_dataset = tf.data.Dataset.from_tensor_slices((dev_word, dev_label))
-    dev_dataset = dev_dataset.batch(dev_batch_size)
+    dev_dataset = dev_dataset.batch(dev_batch_size, drop_remainder=True)
 
     test_dataset = tf.data.Dataset.from_tensor_slices((test_word, test_label))
-    test_dataset = test_dataset.batch(test_batch_size)
+    test_dataset = test_dataset.batch(test_batch_size, drop_remainder=True)
 
     """
     这里有3中常用迭代器，one hot iterator:这是最简单的迭代器
@@ -301,15 +302,13 @@ def main():
 
     # Input layer
     data_word, data_label = iterator.get_next()
-    print('------------------------------------------------')
 
-    # batchsize_num = tf.placeholder(tf.int32, [])
     # if flag:
     #     seq = np.full(batch_size, sequence_length, dtype=np.int32)
     # else:
     #     seq = np.full(three_batchsize, sequence_length, dtype=np.int32)
     # seq = np.linspace(256, 256, 256)
-
+    seq = np.full(batch_size, sequence_length, dtype=np.int32)
     # embedding layer
     embeddings = tf.Variable(tf.random_uniform([vocab_size, embedding_size], -1, 1), dtype=tf.float32)
     inputs = tf.nn.embedding_lookup(embeddings, data_word)
@@ -320,9 +319,6 @@ def main():
     # 采用双向GRU的Rnn
     gru_fw_cell = tf.nn.rnn_cell.GRUCell(num_units=embedding_size)
     gru_lw_cell = tf.nn.rnn_cell.GRUCell(num_units=embedding_size)
-
-    # 对dropout函数初始化
-    # drop_keep_rate = tf.placeholder(tf.float32, [])
 
     # 为避免过拟合使用dropout函数
     gru_fw_cell = tf.nn.rnn_cell.DropoutWrapper(gru_fw_cell, input_keep_prob=1.0, output_keep_prob=1.0)
@@ -337,7 +333,8 @@ def main():
     # initial_lw_cell = stacked_lw_cell.zero_state()
 
     inputs = tf.unstack(inputs, axis=1)
-    outputs, _, _ = tf.nn.static_bidirectional_rnn(stacked_fw_cell, stacked_lw_cell, inputs, dtype=tf.float32)
+    outputs, _, _ = tf.nn.static_bidirectional_rnn(stacked_fw_cell, stacked_lw_cell, inputs, dtype=tf.float32,
+                                                   sequence_length=seq)
     output = tf.stack(outputs, axis=1)
     output = tf.reshape(tf.concat(output, 1), [-1, embedding_size * 2])
 
@@ -362,15 +359,21 @@ def main():
 
     y_label_real = tf.cast(tf.argmax(y_label_reshape, axis=-1), tf.int32)
 
-    # # CRF层
-    # log_likelihood, transition_params = tf.contrib.crf.crf_log_likelihood(
-    #     begin_pre_labels_reshape, y_label_real, seq)
-    #
-    # cross_entropy = tf.reduce_mean(-log_likelihood)
+    # CRF层
+    log_likelihood, transition_params = tf.contrib.crf.crf_log_likelihood(
+        begin_pre_labels_reshape, y_label_real, seq)
+    print(transition_params.shape)
+
+    viterbi_sequence, _ = tf.contrib.crf.crf_decode(begin_pre_labels_reshape, transition_params, seq)
+    with tf.name_scope('loss'):
+        cross_entropy = tf.reduce_mean(-log_likelihood)
+        tf.summary.scalar('loss', cross_entropy)
+
+    # pre_labels_reshape = tf.nn.softmax(viterbi_sequence, axis=-1)
+    # y_label_pre = tf.cast(tf.argmax(pre_labels_reshape, axis=-1), tf.int32)
 
     # prediction
     correct_prediction = tf.equal(y_label_pre, y_label_real)
-    # with tf.name_scope('accuracy'):
 
     with tf.name_scope('accuracy'):
         accuracy = tf.reduce_mean(tf.cast(correct_prediction, dtype=tf.float32))
@@ -379,11 +382,11 @@ def main():
     print('Prediction', correct_prediction, 'Accuracy', accuracy)
 
     # loss softmax的损失函数
-    with tf.name_scope('loss'):
-        cross_entropy = tf.reduce_mean(
-            tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y_label_real,
-                                                           logits=begin_pre_labels_reshape + 1e-10))
-        tf.summary.scalar('loss', cross_entropy)
+    # with tf.name_scope('loss'):
+    #     cross_entropy = tf.reduce_mean(
+    #         tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y_label_real,
+    #                                                        logits=begin_pre_labels_reshape + 1e-10))
+    #     tf.summary.scalar('loss', cross_entropy)
 
     # train控制梯度
     # optimizer = tf.train.AdamOptimizer(learning_rate, beta1=0.5)
@@ -433,9 +436,6 @@ def main():
                 summary_run, labels_pre_h, loss, acc, gstep, _ = sess.run(
                     [summaries, begin_pre_labels_reshape, cross_entropy, accuracy, global_step,
                      train_step_op])
-                # if step == int(train_step) - 1:
-                #     flag = 0
-                #     three_batchsize = train_restseq_num
 
                 # smrs, loss, acc, gstep, _ = sess.run([summaries, cross_entropy, accuracy, global_step, train_step_op],
                 #                                      feed_dict={keep_prob: 1})
@@ -446,7 +446,6 @@ def main():
                 if gstep % steps_per_sumary == 0:
                     writer.add_summary(summary_run, gstep)
                     print('Write Summaries to', summaries_dir)
-            # flag = 1
 
             if epoch % epochs_per_dev == 0:
                 print('正在验证中：')
@@ -457,9 +456,7 @@ def main():
                     # 此处使用的minibatch梯度下降,将数据集分成train_step份.在每一次小batch中更新参数
                     if step % steps_per_print == 0:
                         acc = sess.run(accuracy)
-                        # if step == int(dev_step) - 1:
-                        #     flag = 0
-                        #     three_batchsize = dev_restseq_num
+
                         print('running')
                         if acc > best_score:
                             num_epoch_no_improve = 0
@@ -472,11 +469,11 @@ def main():
                             if num_epoch_no_improve > num_epoch_no_improve_bear:
                                 Flag = 1
                                 break
-                # flag = 1
             if Flag:
                 break
     else:
         number_print = 0
+        # final_label_pre_result = []
         print("Testing......")
         # load model
         last_ckpt = tf.train.latest_checkpoint(save_dir)
@@ -484,31 +481,33 @@ def main():
             saver.restore(sess, last_ckpt)
         print('Restore From', last_ckpt)
         sess.run(test_initial_op)
+        P, R, F, A = [], [], [], []
         for step in range(int(test_step)):
             summary_run, data_word_result, data_label_pre_result, data_label_real_result, acc = sess.run(
-                [summaries, data_word, begin_pre_labels_reshape, y_label_real, accuracy])
-            # if step == int(test_step) - 1:
-            #     flag = 0
-            #     three_batchsize = test_restseq_num
+                [summaries, data_word, viterbi_sequence, y_label_real, accuracy])
+            print(data_label_pre_result.shape)
+
             print("test step", step, '未处理前Accuracy', acc)
             if step % steps_per_sumary == 0:
                 writer.add_summary(summary_run, gstep)
                 print('Write Summaries to', summaries_dir)
-            # final_label_pre_result  = tf.contrib.crf.
-            final_label_pre_result = search_bestresult(data_label_pre_result)
-            P_value, R_value, F_value, R_value = compute_PRFvalues(final_label_pre_result, data_label_real_result)
+            # for i in range(len(data_label_pre_result)):
+            # viterbi_seq, _ = viterbi_decode(data_label_pre_result[i], transition_params)
+            # final_label_pre_result.append(viterbi_seq)
+            # final_label_pre_result = search_bestresult(data_label_pre_result)
+            P_value, R_value, F_value, A_value = compute_PRFvalues(data_label_pre_result, data_label_real_result)
+            P.append(P_value)
+            R.append(R_value)
+            F.append(F_value)
+            A.append(A_value)
+            print(P_value, R_value, F_value, A_value)
             for i in range(len(data_word_result)):
                 print('当前', i)
                 y_real_label_ = list(map(judge, data_label_real_result[i]))
                 y_real_label_ = dele_none(y_real_label_)
-                print(y_real_label_)
-                print(final_label_pre_result[i])
                 data_word_result_final = list(filter(lambda x: x, data_word_result[i]))
-                y_predict_label_final = list(map(judge, final_label_pre_result[i]))
-                print(y_predict_label_final)
+                y_predict_label_final = list(map(judge, data_label_pre_result[i]))
                 y_predict_label_final = dele_none(y_predict_label_final)
-                print(y_predict_label_final)
-
                 word_deal = ' '.join(id2word[data_word_result_final].values)
                 if number_print < 100:
                     display_word(word_deal, y_predict_label_final, y_real_label_)
@@ -519,6 +518,19 @@ def main():
                 label_y = label_y.replace(' ', '')
                 label_y_real = label_y_real.replace(' ', '')
                 print(word_x, label_y, label_y_real)
+        X_pan = np.linspace(0, int(test_step) - 1, int(test_step))
+        plt.plot(X_pan, P)
+        plt.scatter(X_pan, P)
+        plt.plot(X_pan, R)
+        plt.scatter(X_pan, R)
+        plt.plot(X_pan, F)
+        plt.scatter(X_pan, F)
+        plt.plot(X_pan, A)
+        plt.scatter(X_pan, A)
+        plt.title('在测试集中的P,R,F,A值')
+        plt.xlabel('test_step')
+        plt.ylabel('P,R,F,A')
+        plt.savefig('/home/joyfly/桌面/image.png')
 
 
 if __name__ == '__main__':

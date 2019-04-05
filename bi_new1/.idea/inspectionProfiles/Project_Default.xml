@@ -16,6 +16,7 @@
           <option value="numpy.core._multiarray_umath.ndarray.index" />
           <option value="str.__truediv__" />
           <option value="sys.setdefaultencoding" />
+          <option value="matplotlib.font_manager" />
         </list>
       </option>
     </inspection_tool>
