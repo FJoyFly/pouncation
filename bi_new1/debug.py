@@ -15,6 +15,11 @@ plt.scatter(q, y)
 plt.plot(q, x)
 plt.scatter(q, x)
 plt.savefig('/home/joyfly/桌面/image.png')
+num_classes = 10
+# 需要转换的整数
+arr = [1, 3, 4, 5, 9]
+# 将整数转为一个10位的one hot编码
+print(np.eye(10)[arr])
 
 # for i in range(3):
 #     now_score_nine[i] += score_three[i]

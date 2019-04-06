@@ -5,7 +5,7 @@ import re
 import numpy as np
 import math
 
-file_path = '/home/joyfly/桌面/全部/数据'
+file_path = '/home/joyfly/桌面/全部/all_data_new'
 outfile = '/home/joyfly/桌面/宋书'
 in_output_file = '/home/joyfly/桌面/宋2'
 output_file = '/home/joyfly/桌面/副本2'
@@ -84,28 +84,28 @@ def change_format(input_file, output_file):
     output_data.close()
 
 
-# 大概计算各标签间转移概率
-def score_transfer(inputfile):
-    num_of_length = np.zeros(6)
-    data = codecs.open(inputfile, 'r', 'utf-8')
-    for i in data.readlines():
-        list = re.split("[，。？：；‘’“”、]", i)
-        for _ in list:
-            _ = _.strip()
-            number_length = len(_)
-            if number_length > 5:
-                num_of_length[5] += 1
-            elif number_length == 5:
-                num_of_length[4] += 1
-            elif number_length == 4:
-                num_of_length[3] += 1
-            elif number_length == 3:
-                num_of_length[2] += 1
-            elif number_length == 2:
-                num_of_length[1] += 1
-            elif number_length == 1:
-                num_of_length[0] += 1
-    return num_of_length
+# # 大概计算各标签间转移概率
+# def score_transfer(inputfile):
+#     num_of_length = np.zeros(6)
+#     data = codecs.open(inputfile, 'r', 'utf-8')
+#     for i in data.readlines():
+#         list = re.split("[，。？：；‘’“”、]", i)
+#         for _ in list:
+#             _ = _.strip()
+#             number_length = len(_)
+#             if number_length > 5:
+#                 num_of_length[5] += 1
+#             elif number_length == 5:
+#                 num_of_length[4] += 1
+#             elif number_length == 4:
+#                 num_of_length[3] += 1
+#             elif number_length == 3:
+#                 num_of_length[2] += 1
+#             elif number_length == 2:
+#                 num_of_length[1] += 1
+#             elif number_length == 1:
+#                 num_of_length[0] += 1
+#     return num_of_length
 
 
 # 将文本后标注上对应的标签
@@ -169,6 +169,6 @@ print('正在将格式文件中古文标注对应的标签\n')
 character_tagging(in_output_file, output_file)
 print('段落总数：', all_length)
 print('超过固定长度的段落数：', length)
-num_of_lenght = score_transfer(in_output_file)
-print('各句子长度数:', num_of_lenght)
+# num_of_lenght = score_transfer(in_output_file)
+# print('各句子长度数:', num_of_lenght)
 print(num_word_all)

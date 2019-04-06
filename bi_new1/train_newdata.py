@@ -5,7 +5,6 @@ from os.path import exists, join
 import pickle
 import numpy as np
 import pandas as pd
-from keras.utils import np_utils
 import codecs
 
 train_input_file_path = '/home/joyfly/桌面/副本2'
@@ -94,10 +93,10 @@ def tag_trans(tag):
     ids = list(tag2id[tag])
     if len(ids) >= maxlen:
         ids = ids[:maxlen]
-    ids = np_utils.to_categorical(ids, 7)
+    ids = np.eye(7)[ids]
     ids = list(ids)
-    for _ in range(maxlen - len(ids)):
-        ids.extend([np.array([0, 0, 0, 0, 0, 0, 1])])
+    # for _ in range(maxlen - len(ids)):
+    #     ids.extend([np.array([0, 0, 0, 0, 0, 0, 1])])
     ids.extend([np.array([0, 0, 0, 0, 0, 0, 1])] * (maxlen - len(ids)))
     return np.array(ids)
 
