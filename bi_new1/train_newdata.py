@@ -39,12 +39,18 @@ def get_data(input_file):
     # all_word_list = list()
     input_data = codecs.open(input_file, 'r', 'utf-8')
     for line in input_data.readlines():
-        print(line)
         word_list = line.strip().split()
-        da = get_data_label(word_list)
-        if da:
-            data.append(da[0])
-            label.append(da[1])
+        word_list.extend(' ')
+        word = u' '.join(word_list)
+        word = re.findall('(.)/([BMSE].)', word)
+        if word:
+            word = np.array(word)
+            data.append(list(word[:, 0]))
+            label.append(list(word[:, 1]))
+        # da = get_data_label(word_list)
+        # if da:
+        #     data.append(da[0])
+        #     label.append(da[1])
         # all_word_list.append(word_list)
     input_data.close()
     # return all_word_list
