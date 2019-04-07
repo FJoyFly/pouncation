@@ -5,12 +5,12 @@ import re
 import numpy as np
 import math
 
-file_path = '/home/joyfly/桌面/全部/all_data_new'
+file_path = '/home/joyfly/桌面/全部/数据'
 outfile = '/home/joyfly/桌面/宋书'
 in_output_file = '/home/joyfly/桌面/宋2'
 output_file = '/home/joyfly/桌面/副本2'
 
-length_526 = 0
+# length_526 = 0
 all_length = 0
 length = 0
 num_word_all = 0

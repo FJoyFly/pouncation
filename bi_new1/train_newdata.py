@@ -7,23 +7,9 @@ import numpy as np
 import pandas as pd
 import codecs
 
+print("begining...")
+
 train_input_file_path = '/home/joyfly/桌面/副本2'
-
-
-# 取出格式化的数据并返回一个大列表
-def get_data(input_file):
-    '''
-
-    :param input_file: 终整理文本输入
-    :return: 返回一个所需的list
-    '''
-    all_word_list = list()
-    input_data = codecs.open(input_file, 'r', 'utf-8')
-    for line in input_data.readlines():
-        word_list = line.strip().split()
-        all_word_list.append(word_list)
-    input_data.close()
-    return all_word_list
 
 
 # ?为什么最后一个字不见了
@@ -43,18 +29,31 @@ def get_data_label(word):
         return list(word[:, 0]), list(word[:, 1])
 
 
+# 取出格式化的数据并返回一个大列表
+def get_data(input_file):
+    '''
+
+    :param input_file: 终整理文本输入
+    :return: 返回一个所需的list
+    '''
+    # all_word_list = list()
+    input_data = codecs.open(input_file, 'r', 'utf-8')
+    for line in input_data.readlines():
+        print(line)
+        word_list = line.strip().split()
+        da = get_data_label(word_list)
+        if da:
+            data.append(da[0])
+            label.append(da[1])
+        # all_word_list.append(word_list)
+    input_data.close()
+    # return all_word_list
+
+
 data = []
 label = []
-print()
-# 获取数据集
-all_list_word = get_data(train_input_file_path)
+get_data(train_input_file_path)
 
-# 获取训练集中古文和标签对应的集合
-for duan in all_list_word:
-    da = get_data_label(duan)
-    if da:
-        data.append(da[0])
-        label.append(da[1])
 print('data length ', len(data), 'Label length ', len(label))
 print('data example', data[0])
 print('label example', label[0])
