@@ -6,6 +6,7 @@ import re
 import os.path
 import shutil
 import matplotlib.pyplot as plt
+import pandas as pd
 
 x = [1, 2, 3, 4]
 y = [9, 8, 7, 6]
@@ -20,6 +21,8 @@ num_classes = 10
 arr = [1, 3, 4, 5, 9]
 # 将整数转为一个10位的one hot编码
 print(np.eye(10)[arr])
+a = pd.Series([1, 2, 3, 4, 5])
+print(a)
 
 # for i in range(3):
 #     now_score_nine[i] += score_three[i]

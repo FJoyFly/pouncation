@@ -1,8 +1,9 @@
 import tensorflow as tf
 import pickle
 import codecs
-from test import search_bestresult, judge, dele_none
+from test import judge, dele_none
 import numpy as np
+import math
 
 sequence_maxlen = 256
 
@@ -26,7 +27,6 @@ def load_data():
 
 
 tag2id, id2tag, word2id, id2word = load_data()
-print(word2id)
 
 
 def word_trans(word):
@@ -65,8 +65,11 @@ for line in new_data:
 
 data_word = list(map(lambda x: word_trans(x), data_list))
 
-for i in data_word:
-    print(i)
+for line in data_word:
+    for i in range(len(line)):
+        line[i] = math.floor(line[i])
+
+
 test_word = tf.data.Dataset.from_tensor_slices(data_word)
 iterator = test_word.make_one_shot_iterator()
 
@@ -78,7 +81,7 @@ except tf.errors.OutOfRangeError:
 
 sess = tf.Session()
 
-saver = tf.train.import_meta_graph(ckpt_path + 'model.ckpt-517.meta')
+saver = tf.train.import_meta_graph(ckpt_path + 'model.ckpt-197.meta')
 saver.restore(sess, tf.train.latest_checkpoint(ckpt_path))
 
 graph = tf.get_default_graph()
@@ -86,18 +89,22 @@ graph = tf.get_default_graph()
 keep_prob = graph.get_tensor_by_name('keep_prob:0')
 begin_pre_labels_reshape = graph.get_tensor_by_name('begin_pre_labels_reshape:0')
 
+
 sess.run(iterator)
 
-print('迭代器完成')
 
+#
+# print('迭代器完成')
+#
 data_label_pre_result, data_word_result = sess.run([begin_pre_labels_reshape, inputs], feed_dict={keep_prob: 1})
+print(data_label_pre_result)
 
-print('得到标注标签')
-data_label_pre_result = search_bestresult(data_label_pre_result)
-for i in range(len(data_label_pre_result)):
-    data_word_result_final = list(filter(lambda x: x, data_word_result[i]))
-    data_label_result_final = list(map(judge, data_label_pre_result[i]))
-    y_predict_label_final = dele_none(data_label_result_final)
-    word_x = ''.join(id2word[data_word_result_final].values)
-    label_y = ''.join(id2tag[y_predict_label_final].values)
-    print(word_x, label_y)
+#
+# print('得到标注标签')
+# for i in range(len(data_label_pre_result)):
+#     data_word_result_final = list(filter(lambda x: x, data_word_result[i]))
+#     data_label_result_final = list(map(judge, data_label_pre_result[i]))
+#     y_predict_label_final = dele_none(data_label_result_final)
+#     word_x = ''.join(id2word[data_word_result_final].values)
+#     label_y = ''.join(id2tag[y_predict_label_final].values)
+#     print(word_x, label_y)

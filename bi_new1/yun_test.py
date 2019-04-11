@@ -1,3 +1,4 @@
+# rsync -ah --progress /data/mnist_data/ /input/mnist_data/
 import tensorflow as tf
 import pickle
 import math
@@ -11,10 +12,10 @@ import shutil
 import matplotlib.pyplot as plt
 import matplotlib
 
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
-source_data = '/home/joyfly/桌面/all_data.pkl'
+source_data = '/input/all_data.pkl'
 train_batch_size = 128
 dev_batch_size = 128
 test_batch_size = 128
@@ -25,16 +26,16 @@ pouncation_num = 7
 learning_rate = 0.001
 isTrain = False
 epochs = 500
-summaries_dir = '/home/joyfly/桌面/summary/'
-save_dir = '/home/joyfly/桌面/ckpt/'
-outputs_path = '/home/joyfly/桌面/'
+summaries_dir = '/input/summary/'
+save_dir = '/input/ckpt/'
+outputs_path = '/input/'
 steps_per_print = 6
 steps_per_sumary = 5
 epochs_per_dev = 2
 num_epoch_no_improve_bear = 10
 sequence_length = 256
 lamda = 0.7
-zhfont1 = matplotlib.font_manager.FontProperties(fname="/home/joyfly/下载/SimHei.ttf")
+zhfont1 = matplotlib.font_manager.FontProperties(fname="/input/things/SimHei.ttf")
 
 
 def load_data():
@@ -69,94 +70,12 @@ def get_data(data_word, data_label):
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape=shape, stddev=0.1, dtype=tf.float32)
-    return tf.Variable(initial)
+    return tf.get_variable(initial)
 
 
 def bias_variable(shape):
     initial = tf.constant(value=0.1, dtype=tf.float32, shape=shape)
-    return tf.Variable(initial)
-
-
-# trans_pro_new = np.zeros(shape=(7, 7), dtype=np.float32)
-# trans_pro_new[0][1] += 0.8
-# trans_pro_new[0][0] += 0.2
-# trans_pro_new[1][2] += 0.635
-# trans_pro_new[1][3] += 0.222
-# trans_pro_new[1][4] += 0.046
-# trans_pro_new[1][5] += 0.097
-# trans_pro_new[2][2] += 0.831
-# trans_pro_new[2][3] += 0.169
-# trans_pro_new[3][4] += 1
-# trans_pro_new[4][5] += 1
-# trans_pro_new[5][0] += 0.007
-# trans_pro_new[5][1] += 0.993
-#
-#
-# # 根据beam_search算法 每次取前3次概率最高的序列
-# def search_bestresult(waiting_deal_label):
-#     final_label = []
-#     for duan in waiting_deal_label:
-#         label_fin = [[] for _ in range(3)]
-#         now_label_three = [[] for _ in range(3)]
-#         now_score_three = np.zeros(shape=3)
-#         now_label_nine = [[] for _ in range(9)]
-#         now_score_nine = np.zeros(shape=9)
-#         lamda_t = 0.7
-#         beda = 0.01
-#         word_length = 0
-#         zi_num = 0
-#         for zi in duan:
-#             score_three = heapq.nlargest(3, zi)
-#             index_three = list(map(list(zi).index, score_three))
-#             if now_label_three[0]:
-#                 zi_num += 1
-#                 for i in range(3):
-#                     now_score_nine[i] = now_score_three[i]
-#                     now_label_nine[i] = []
-#                     now_label_nine[i].extend(now_label_three[i])
-#                     now_score_nine[i + 3] = now_score_three[i]
-#                     now_label_nine[i + 3] = []
-#                     now_label_nine[i + 3].extend(now_label_three[i])
-#                     now_score_nine[i + 6] = now_score_three[i]
-#                     now_label_nine[i + 6] = []
-#                     now_label_nine[i + 6].extend(now_label_three[i])
-#                 for i in range(3):
-#                     one = now_label_nine[i][len(now_label_nine[i]) - 1]
-#                     two = index_three[0]
-#                     now_score_nine[i] = now_score_nine[i] + score_three[0] + lamda_t * trans_pro_new[one][
-#                         two] + beda * word_length
-#                     now_label_nine[i].append(two)
-#
-#                     one_2 = now_label_nine[i + 3][len(now_label_nine[i + 3]) - 1]
-#                     two_2 = index_three[1]
-#                     now_score_nine[i + 3] = now_score_nine[i + 3] + score_three[1] + lamda_t * trans_pro_new[
-#                         one_2][two_2] + beda * word_length
-#                     now_label_nine[i + 3].append(two_2)
-#
-#                     one_3 = now_label_nine[i + 6][len(now_label_nine[i + 6]) - 1]
-#                     two_3 = index_three[2]
-#                     now_score_nine[i + 6] = now_score_nine[i + 6] + score_three[2] + lamda_t * trans_pro_new[
-#                         one_3][two_3] + beda * word_length
-#                     now_label_nine[i + 6].append(two_3)
-#
-#                 now_score_f = heapq.nlargest(3, now_score_nine)
-#                 index_f = list(map(list(now_score_nine).index, now_score_f))
-#                 for i in range(3):
-#                     now_label_three[i] = []
-#                     now_score_three[i] = now_score_f[i]
-#                     now_label_three[i].extend(now_label_nine[index_f[i]])
-#                     label_fin[i].append(now_label_three[i])
-#                 # print(now_label_three[0])
-#             else:
-#                 zi_num += 1
-#                 for i in range(3):
-#                     now_score_three[i] += score_three[i]
-#                     now_label_three[i].append(index_three[i])
-#                     label_fin[i].append(now_label_three[i])
-#
-#                 # print(now_label_three[0])
-#         final_label.append(now_label_nine[0])
-#     return final_label
+    return tf.get_variable(initial)
 
 
 def judge(x):
@@ -491,8 +410,8 @@ def main():
             print(data_label_pre_result.shape)
 
             print("test step", step, '未处理前Accuracy', acc)
-            if gstep % steps_per_sumary == 0:
-                writer.add_summary(summary_run, step)
+            if step % steps_per_sumary == 0:
+                writer.add_summary(summary_run, gstep)
                 print('Write Summaries to', summaries_dir)
             # for i in range(len(data_label_pre_result)):
             # viterbi_seq, _ = viterbi_decode(data_label_pre_result[i], transition_params)
@@ -533,7 +452,7 @@ def main():
         plt.title('在测试集中的P,R,F,A值', fontdict=zhfont1)
         plt.xlabel('test_step', fontdict=zhfont1)
         plt.ylabel('P,R,F,A', fontdict=zhfont1)
-        plt.savefig('/home/joyfly/桌面/image.png')
+        plt.savefig('/input/image.png')
 
 
 if __name__ == '__main__':

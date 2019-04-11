@@ -9,7 +9,7 @@ import codecs
 
 print("begining...")
 
-train_input_file_path = '/home/joyfly/桌面/副本2'
+train_input_file_path = '/home/joyfly/桌面/data_word/fuben2'
 
 
 # ?为什么最后一个字不见了
@@ -44,6 +44,7 @@ def get_data(input_file):
         word = u' '.join(word_list)
         word = re.findall('(.)/([BMSE].)', word)
         if word:
+
             word = np.array(word)
             data.append(list(word[:, 0]))
             label.append(list(word[:, 1]))
@@ -57,12 +58,14 @@ def get_data(input_file):
 
 
 data = []
+dev_data = []
+test_data = []
 label = []
 get_data(train_input_file_path)
 
-print('data length ', len(data), 'Label length ', len(label))
-print('data example', data[0])
-print('label example', label[0])
+# print('data length ', len(data), 'Label length ', len(label))
+# print('data example', data[0])
+# print('label example', label[0])
 
 maxlen = 256  # 此处的maxlen设置的是每段古文默认的字数，若超过这个字数，则采取截断措施，不够则padding 0
 

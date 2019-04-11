@@ -5,7 +5,7 @@ import re
 import numpy as np
 import math
 
-file_path = '/home/joyfly/桌面/全部/数据'
+file_path = '/home/joyfly/桌面/全部/all_data_new'
 outfile = '/home/joyfly/桌面/宋书'
 in_output_file = '/home/joyfly/桌面/宋2'
 output_file = '/home/joyfly/桌面/副本2'
@@ -42,9 +42,6 @@ def search_txt(file_path, outfile):
                                         f.write(line[middle + i + 1:])
                             elif len(line) < 256:
                                 f.write(line)
-
-                        else:
-                            f.write(line)
                         f.write('\n')
         elif os.path.isdir(newdir):
             search_txt(new_filenames, outfile)
@@ -58,11 +55,9 @@ def change_format(input_file, output_file):
     :param output_file:  输出初整理文本
     :return:
     """
-    global all_length
     input_data = codecs.open(input_file, 'r', 'utf-8')
     output_data = codecs.open(output_file, 'w', 'utf-8')
     for new_data in input_data.readlines():
-        all_length += 1
         if new_data == '\n':
             continue
         else:
@@ -116,10 +111,11 @@ def character_tagging(input_file, output_file):
     :param output_file: 终整理文本
     :return: 已标注文本
     '''
-    global num_word_all
+    global num_word_all, all_length
     input_data = codecs.open(input_file, 'r', 'utf-8')
     output_data = codecs.open(output_file, 'w', 'utf-8')
     for line in input_data.readlines():
+        all_length += 1
         word_list = line.strip().split()  # 这里读取数据时按\n进行的
         for word in word_list:
             if u'\u4E00' <= word <= u'\u9FEF':
@@ -143,22 +139,22 @@ def character_tagging(input_file, output_file):
     output_data.close()
 
 
-# # 计算次文本中总共不重复的字数
-# def count_vocab(input_file):
-#     '''
-#
-#     :param input_file: 初整理文本
-#     :return:
-#     '''
-#     input_data = codecs.open(input_file, 'r', 'utf-8')
-#     data_vocabu = []
-#     for data_vo in input_data.readlines():
-#         for i in data_vo:
-#             if u'\u4E00' <= i <= u'\u9FEF' and i not in data_vocabu:
-#                 data_vocabu.extend(i)
-#             else:
-#                 continue
-#     return data_vocabu
+# 计算次文本中总共不重复的字数
+def count_vocab(input_file):
+    '''
+
+    :param input_file: 初整理文本
+    :return:
+    '''
+    input_data = codecs.open(input_file, 'r', 'utf-8')
+    data_vocabu = []
+    for data_vo in input_data.readlines():
+        for i in data_vo:
+            if u'\u4E00' <= i <= u'\u9FEF' and i not in data_vocabu:
+                data_vocabu.extend(i)
+            else:
+                continue
+    return data_vocabu
 
 
 print('正在查找当前目录下带标点txt文件\n')
@@ -169,6 +165,7 @@ print('正在将格式文件中古文标注对应的标签\n')
 character_tagging(in_output_file, output_file)
 print('段落总数：', all_length)
 print('超过固定长度的段落数：', length)
+print(len(count_vocab(in_output_file)))
 # num_of_lenght = score_transfer(in_output_file)
 # print('各句子长度数:', num_of_lenght)
 print(num_word_all)
