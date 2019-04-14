@@ -9,7 +9,7 @@ import codecs
 
 print("begining...")
 
-train_input_file_path = '/home/joyfly/桌面/data_word/fuben2'
+train_input_file_path = '/home/joyfly/桌面/副本2'
 
 
 # ?为什么最后一个字不见了
@@ -23,7 +23,7 @@ def get_data_label(word):
     """
     word.extend(' ')
     word = u' '.join(word)
-    word = re.findall('(.)/([BMSE].)', word)
+    word = re.findall('(.)/(.)', word)
     if word:
         word = np.array(word)
         return list(word[:, 0]), list(word[:, 1])
@@ -42,9 +42,9 @@ def get_data(input_file):
         word_list = line.strip().split()
         word_list.extend(' ')
         word = u' '.join(word_list)
-        word = re.findall('(.)/([BMSE].)', word)
+        word = re.findall('(.)/(.)', word)
+        print(word)
         if word:
-
             word = np.array(word)
             data.append(list(word[:, 0]))
             label.append(list(word[:, 1]))
@@ -81,7 +81,7 @@ word2id = pd.Series(all_data_ids, index=all_data_set)
 print('word2id:\n', word2id)
 id2word = pd.Series(all_data_set, index=all_data_ids)
 print('id2word:\n', id2word)
-tags_set = ['S ', 'B ', 'M ', 'E3', 'E2', 'E ', 'X ']
+tags_set = ['B', 'M', 'F', 'G', 'j', 'd', 'w', 'g', 'f', 'm', 't', 'X']
 tags_ids = range(len(tags_set))
 
 # 标注转化id,id转化标注
@@ -101,11 +101,11 @@ def tag_trans(tag):
     ids = list(tag2id[tag])
     if len(ids) >= maxlen:
         ids = ids[:maxlen]
-    ids = np.eye(7)[ids]
+    ids = np.eye(12)[ids]
     ids = list(ids)
     # for _ in range(maxlen - len(ids)):
     #     ids.extend([np.array([0, 0, 0, 0, 0, 0, 1])])
-    ids.extend([np.array([0, 0, 0, 0, 0, 0, 1])] * (maxlen - len(ids)))
+    ids.extend([np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])] * (maxlen - len(ids)))
     return np.array(ids)
 
 

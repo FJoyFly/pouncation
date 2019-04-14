@@ -5,7 +5,7 @@ import re
 import numpy as np
 import math
 
-file_path = '/home/joyfly/桌面/全部/all_data_new'
+file_path = '/home/joyfly/桌面/全部/别史'
 outfile = '/home/joyfly/桌面/宋书'
 in_output_file = '/home/joyfly/桌面/宋2'
 output_file = '/home/joyfly/桌面/副本2'
@@ -14,11 +14,17 @@ output_file = '/home/joyfly/桌面/副本2'
 all_length = 0
 length = 0
 num_word_all = 0
+line_point = 0
+
+
+# line_most = 300000
 
 
 # 用来对文本进行迭代取其中内容
 def search_txt(file_path, outfile):
-    global length  # 用来控制文本中没有有标点符号的段落数
+    global line_point  # 控制写入文本的段落数
+    # if line_point > line_most:
+    compile = '[，。！？：；“”]'
     filenames = os.listdir(file_path)
     f = codecs.open(outfile, 'a+', 'utf-8')
     new_filenames = filenames
@@ -30,18 +36,21 @@ def search_txt(file_path, outfile):
             if os.path.splitext(newdir)[1] == '.txt':
                 for line in open(newdir):
                     if line:
-                        if len(line) > 32:  # 对原始文段清洗一遍,判断是否是带有标点的段落.是,则加入
-                            word = re.findall('[，。:“”？！；]', line)
+                        if len(line) > 20:  # 对原始文段清洗一遍,判断是否是带有标点的段落.是,则加入
+                            word = re.findall(compile, line)
                             if word is None:
                                 break
                             if 256 < len(line) <= 512:
                                 middle = len(line) // 2
                                 for i in range(middle):
-                                    if re.match('[，。:“”？！；]', line[middle + i]):
+                                    if re.match(compile, line[middle + i]):
                                         f.write(line[:middle + i] + '\n')
+                                        line_point += 1
                                         f.write(line[middle + i + 1:])
+                                        line_point += 1
                             elif len(line) < 256:
                                 f.write(line)
+                                line_point += 1
                         f.write('\n')
         elif os.path.isdir(newdir):
             search_txt(new_filenames, outfile)
@@ -63,7 +72,7 @@ def change_format(input_file, output_file):
         else:
             for i in new_data:
                 # 如果是所需要标点中的一个，使用的时UNICODE编码
-                t = re.search('[，。：；‘’“”？！、]', i)
+                t = re.search('[，。：；？！、]', i)
                 if t:
                     # if i == u'\u3002' or i == u'\uFF1F' or i == u'\uFF01' \
                     #         or i == u'\uFF0C' or i == u'\uFF1B' or i == u'\uFF1A' \
@@ -111,50 +120,69 @@ def character_tagging(input_file, output_file):
     :param output_file: 终整理文本
     :return: 已标注文本
     '''
-    global num_word_all, all_length
+    global num_word_all, all_length, tag
     input_data = codecs.open(input_file, 'r', 'utf-8')
     output_data = codecs.open(output_file, 'w', 'utf-8')
     for line in input_data.readlines():
+        if line == '\n':
+            continue
         all_length += 1
         word_list = line.strip().split()  # 这里读取数据时按\n进行的
-        for word in word_list:
+        for i, word in enumerate(word_list):
             if u'\u4E00' <= word <= u'\u9FEF':
+                if line[i + 1] == '，':
+                    tag = 'd'
+                elif line[i + 1] == '。':
+                    tag = 'j'
+                elif line[i + 1] == '？':
+                    tag = 'w'
+                elif line[i + 1] == '！':
+                    tag = 'g'
+                elif line[i + 1] == '；':
+                    tag = 'f'
+                elif line[i + 1] == '：':
+                    tag = 'm'
+                elif line[i + 1] == '、':
+                    tag = 't'
+                else:
+                    continue
                 num_word_all += 1
                 if len(word) == 1:
-                    output_data.write(word + "/S" + '  ')
+                    output_data.write(word + '/' + tag + '  ')
                 else:
                     output_data.write(word[0] + "/B" + '  ')
                     for w in word[1:len(word) - 3]:
                         output_data.write(w + "/M" + '  ')
                 if len(word) > 3:
                     output_data.write(
-                        word[len(word) - 3] + "/E3" + '  ' + word[len(word) - 2] + "/E2" + '  ' + word[
-                            len(word) - 1] + "/E" + '  ')
+                        word[len(word) - 3] + "/F" + '  ' + word[len(word) - 2] + "/G" + '  ' + word[
+                            len(word) - 1] + '/' + tag + '  ')
                 elif len(word) > 2:
-                    output_data.write(word[len(word) - 2] + "/E2" + '  ' + word[len(word) - 1] + "/E" + '  ')
+                    output_data.write(word[len(word) - 2] + "/G" + '  ' + word[len(word) - 1] + '/' + tag + '  ')
                 elif len(word) > 1:
-                    output_data.write(word[len(word) - 1] + "/E" + '  ')
+                    output_data.write(word[len(word) - 1] + '/' + tag + '  ')
         output_data.write("\n")
     input_data.close()
     output_data.close()
 
 
-# 计算次文本中总共不重复的字数
-def count_vocab(input_file):
-    '''
-
-    :param input_file: 初整理文本
-    :return:
-    '''
-    input_data = codecs.open(input_file, 'r', 'utf-8')
-    data_vocabu = []
-    for data_vo in input_data.readlines():
-        for i in data_vo:
-            if u'\u4E00' <= i <= u'\u9FEF' and i not in data_vocabu:
-                data_vocabu.extend(i)
-            else:
-                continue
-    return data_vocabu
+# # 计算次文本中总共不重复的字数
+# def count_vocab(input_file):
+#     '''
+#
+#     :param input_file: 初整理文本
+#     :return:
+#     '''
+#     input_data = codecs.open(input_file, 'r', 'utf-8')
+#     data_vocabu = []
+#     for data_vo in input_data.readlines():
+#         for i in data_vo:
+#             if u'\u4E00' <= i <= u'\u9FEF' and i not in data_vocabu:
+#                 data_vocabu.extend(i)
+#             else:
+#                 continue
+#     input_data.close()
+#     return data_vocabu
 
 
 print('正在查找当前目录下带标点txt文件\n')
@@ -165,7 +193,7 @@ print('正在将格式文件中古文标注对应的标签\n')
 character_tagging(in_output_file, output_file)
 print('段落总数：', all_length)
 print('超过固定长度的段落数：', length)
-print(len(count_vocab(in_output_file)))
+# print(len(count_vocab(in_output_file)))
 # num_of_lenght = score_transfer(in_output_file)
 # print('各句子长度数:', num_of_lenght)
 print(num_word_all)

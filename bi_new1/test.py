@@ -21,7 +21,7 @@ test_batch_size = 128
 embedding_size = 256
 batch_size = 128
 layer_num = 2
-pouncation_num = 7
+pouncation_num = 12
 learning_rate = 0.001
 isTrain = False
 epochs = 500
@@ -160,7 +160,7 @@ def bias_variable(shape):
 
 
 def judge(x):
-    if -1 < x < 6:
+    if -1 < x < 11:
         return x
 
 
@@ -197,20 +197,44 @@ def compute_PRFvalues(label_1, label_2):
     return P_value, R_value, F_value, A_value
 
 
-#
-# def feed_sequences(word):
-#     sequence_lengths = []
-#     for seq in word.eval():
-#         number = 0
-#         length = len(seq)
-#         for i in range(length):
-#             if seq[length - i - 1] == 0:
-#                 number += 1
-#             else:
-#                 break
-#         final_length = length - number
-#         sequence_lengths.append(final_length)
-#     return sequence_lengths
+def new_compute_evaluate(lable1, lable2):
+    '''
+
+    :param lable1:所得预测标签
+    :param lable2: 真是标签
+    :return:
+    '''
+    real_poun = 0
+    fail_poun = 0
+    fail_nopoun = 0
+    real_nopoun = 0
+    real_biao = 0
+    pre_biao = 0
+    all_biao = 0
+    for duan1, duan2 in zip(lable1, lable2):
+        for i in range(len(duan1)):
+            if duan1[i].isupper() and duan2[i].isupper():
+                real_nopoun += 1
+            elif duan1[1].islower() and duan2[i].islower():
+                if duan1[i] == duan2[i]:
+                    real_biao += 1
+                real_poun += 1
+            elif duan1[i].isupper() and duan2[i].islower():
+                fail_poun += 1
+            elif duan1[i].islower() and duan2[i].isupper():
+                fail_nopoun += 1
+            if duan1[i].islower():
+                pre_biao += 1
+            if duan2[i].islower():
+                all_biao += 1
+    biaodian_P = round(real_biao / pre_biao)
+    biaodian_R = round(real_biao / all_biao)
+    biaodian_F = round(2 * biaodian_P * biaodian_R / (biaodian_P + biaodian_R), 3)
+    duanju_P_value = round(real_poun / (real_poun + fail_poun), 3)
+    duanju_R_value = round(real_poun / (real_poun + fail_nopoun), 3)
+    duanju_F_value = round(2 * duanju_P_value * duanju_R_value / (duanju_P_value + duanju_R_value), 3)
+    duanju_A_value = round((real_nopoun + real_poun) / (real_nopoun + real_poun + fail_nopoun + fail_poun), 3)
+    return duanju_P_value, duanju_R_value, duanju_F_value, duanju_A_value, biaodian_P, biaodian_R, biaodian_F
 
 
 # 显示对比解结果
@@ -346,7 +370,7 @@ def main():
         softmax_bias = bias_variable([pouncation_num])
         tf.summary.histogram('bias', softmax_bias)
     begin_pre_labels = tf.matmul(output, softmax_weight) + softmax_bias
-    begin_pre_labels_reshape = tf.reshape(begin_pre_labels, (-1, sequence_length, 7))
+    begin_pre_labels_reshape = tf.reshape(begin_pre_labels, (-1, sequence_length, 12))
 
     # 原始每段句子的标注结果标签概率
 
@@ -355,7 +379,7 @@ def main():
     y_label_pre = tf.cast(tf.argmax(pre_labels_reshape, axis=-1), tf.int32)
 
     # 真实标签
-    y_label_reshape = tf.reshape(data_label, (-1, sequence_length, 7))
+    y_label_reshape = tf.reshape(data_label, (-1, sequence_length, 12))
 
     y_label_real = tf.cast(tf.argmax(y_label_reshape, axis=-1), tf.int32)
 
@@ -492,18 +516,16 @@ def main():
 
             print("test step", step, '未处理前Accuracy', acc)
             if gstep % steps_per_sumary == 0:
-                writer.add_summary(summary_run, step)
+                writer.add_summary(summary_run, gstep)
                 print('Write Summaries to', summaries_dir)
-            # for i in range(len(data_label_pre_result)):
-            # viterbi_seq, _ = viterbi_decode(data_label_pre_result[i], transition_params)
-            # final_label_pre_result.append(viterbi_seq)
-            # final_label_pre_result = search_bestresult(data_label_pre_result)
-            P_value, R_value, F_value, A_value = compute_PRFvalues(data_label_pre_result, data_label_real_result)
-            P.append(P_value)
-            R.append(R_value)
-            F.append(F_value)
-            A.append(A_value)
-            print(P_value, R_value, F_value, A_value)
+            # P_value, R_value, F_value, A_value = compute_PRFvalues(data_label_pre_result, data_label_real_result)
+            # P.append(P_value)
+            # R.append(R_value)
+            # F.append(F_value)
+            # A.append(A_value)
+            # print(P_value, R_value, F_value, A_value)
+            com1 = []
+            com2 = []
             for i in range(len(data_word_result)):
                 print('当前', i)
                 y_real_label_ = list(map(judge, data_label_real_result[i]))
@@ -516,11 +538,22 @@ def main():
                     display_word(word_deal, y_predict_label_final, y_real_label_)
                     number_print += 1
                 word_x = ''.join(id2word[data_word_result_final].values)
+                list_label_y = id2tag[y_predict_label_final].values
+                list_label_y_real = id2tag[y_real_label_].values
+                print('---------------------------')
+                print(list_label_y)
+                print(list_label_y_real)
+                print('---------------------------')
+                com1.append(list_label_y)
+                com2.append(list_label_y_real)
                 label_y = ''.join(id2tag[y_predict_label_final].values)
                 label_y_real = ''.join(id2tag[y_real_label_].values)
                 label_y = label_y.replace(' ', '')
                 label_y_real = label_y_real.replace(' ', '')
-                print(word_x, label_y, label_y_real)
+                print(word_x)
+                print(label_y)
+                print(label_y_real)
+            # new_compute_evaluate(com1, com2)
         X_pan = np.linspace(0, int(test_step) - 1, int(test_step))
         plt.plot(X_pan, P)
         plt.scatter(X_pan, P)
@@ -530,7 +563,7 @@ def main():
         plt.scatter(X_pan, F)
         plt.plot(X_pan, A)
         plt.scatter(X_pan, A)
-        plt.title('在测试集中的P,R,F,A值', fontdict=zhfont1)
+        plt.title('在测试集中的P,R,F,A值')  # fontdict=zhfont1
         plt.xlabel('test_step', fontdict=zhfont1)
         plt.ylabel('P,R,F,A', fontdict=zhfont1)
         plt.savefig('/home/joyfly/桌面/image.png')

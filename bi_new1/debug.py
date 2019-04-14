@@ -8,22 +8,22 @@ import shutil
 import matplotlib.pyplot as plt
 import pandas as pd
 
-x = [1, 2, 3, 4]
-y = [9, 8, 7, 6]
-q = [1, 2, 3, 4]
-plt.plot(q, y)
-plt.scatter(q, y)
-plt.plot(q, x)
-plt.scatter(q, x)
-plt.savefig('/home/joyfly/桌面/image.png')
-num_classes = 10
-# 需要转换的整数
-arr = [1, 3, 4, 5, 9]
-# 将整数转为一个10位的one hot编码
-print(np.eye(10)[arr])
-a = pd.Series([1, 2, 3, 4, 5])
-print(a)
+# import codecs
+#
+# input_data = codecs.open('/home/joyfly/桌面/兰亭集序')
+# for line in input_data.readlines():
+#     line = line.strip().split()
+#     for i, word in enumerate(line):
+#         if u'\u4E00' <= word <= u'\u9FEF':
+#             # fuhao = re.match('[，。？！：；、]', line[i + 1])
+#             if line[i + 1] == '，':
+#                 tag = 'j'
+#                 print(word + "/S" + tag)
 
+
+tag = 'B'
+if tag.isupper():
+    print('true')
 # for i in range(3):
 #     now_score_nine[i] += score_three[i]
 #     now_score_nine[i + 3] += score_three[i + 1]
