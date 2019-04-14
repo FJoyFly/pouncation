@@ -252,18 +252,51 @@ def display_word(word, label1, label2):
     outputdata1.write('  ')
     outputdata2.write('  ')
     for i in range(len(word_list)):
-        if label1[i] == 1:
-            outputdata1.write(' ' + word_list[i])
-        elif label1[i] == 0:
-            outputdata1.write(' ' + word_list[i] + ' ')
+        if label1[i] == 'd':
+            outputdata1.write(word_list[i] + '，')
+        elif label1[i] == 'j':
+            outputdata1.write(word_list[i] + '。')
+        elif label1[i] == 'w':
+            outputdata1.write(word_list[i] + '？')
+        elif label1[i] == 'g':
+            outputdata1.write(word_list[i] + '！')
+        elif label1[i] == 'f':
+            outputdata1.write(word_list[i] + '；')
+        elif label1[i] == 'm':
+            outputdata1.write(word_list[i] + '：')
+        elif label1[i] == 't':
+            outputdata1.write(word_list[i] + '、')
         else:
             outputdata1.write(word_list[i])
-        if label2[i] == 1:
-            outputdata2.write(' ' + word_list[i])
-        elif label2[i] == 0:
-            outputdata2.write(' ' + word_list[i] + ' ')
+        if label2[i] == 'd':
+            outputdata2.write(word_list[i] + '，')
+        elif label2[i] == 'j':
+            outputdata2.write(word_list[i] + '。')
+        elif label2[i] == 'w':
+            outputdata2.write(word_list[i] + '？')
+        elif label2[i] == 'g':
+            outputdata2.write(word_list[i] + '！')
+        elif label2[i] == 'f':
+            outputdata2.write(word_list[i] + '；')
+        elif label2[i] == 'm':
+            outputdata2.write(word_list[i] + '：')
+        elif label2[i] == 't':
+            outputdata2.write(word_list[i] + '、')
         else:
             outputdata2.write(word_list[i])
+
+        # if label1[i] == 1:
+        #     outputdata1.write(' ' + word_list[i])
+        # elif label1[i] == 0:
+        #     outputdata1.write(' ' + word_list[i] + ' ')
+        # else:
+        #     outputdata1.write(word_list[i])
+        # if label2[i] == 1:
+        #     outputdata2.write(' ' + word_list[i])
+        # elif label2[i] == 0:
+        #     outputdata2.write(' ' + word_list[i] + ' ')
+        # else:
+        #     outputdata2.write(word_list[i])
     outputdata1.write('\n')
     outputdata1.close()
     outputdata2.write('\n')
@@ -534,9 +567,7 @@ def main():
                 y_predict_label_final = list(map(judge, data_label_pre_result[i]))
                 y_predict_label_final = dele_none(y_predict_label_final)
                 word_deal = ' '.join(id2word[data_word_result_final].values)
-                if number_print < 100:
-                    display_word(word_deal, y_predict_label_final, y_real_label_)
-                    number_print += 1
+
                 word_x = ''.join(id2word[data_word_result_final].values)
                 list_label_y = id2tag[y_predict_label_final].values
                 list_label_y_real = id2tag[y_real_label_].values
@@ -544,6 +575,9 @@ def main():
                 print(list_label_y)
                 print(list_label_y_real)
                 print('---------------------------')
+                if number_print < 100:
+                    display_word(word_deal, list_label_y, list_label_y_real)
+                    number_print += 1
                 com1.append(list_label_y)
                 com2.append(list_label_y_real)
                 label_y = ''.join(id2tag[y_predict_label_final].values)
