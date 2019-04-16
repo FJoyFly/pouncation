@@ -22,9 +22,15 @@ import pandas as pd
 
 
 tag = 'B'
-if tag.isupper():
+tag1 = 'B'
+if tag == tag1:
     print('true')
-# for i in range(3):
-#     now_score_nine[i] += score_three[i]
-#     now_score_nine[i + 3] += score_three[i + 1]
-#     now_score_nine[i + 6] += score_three[i + 2]
+
+list1 = [1, 2, 3, 4, 5]
+list2 = [6, 7, 8, 9, 5]
+plt.plot(list1, list2)
+plt.savefig('/home/joyfly/桌面/im.png')
+plt.close()
+plt.plot(list2, list1)
+plt.savefig('/home/joyfly/桌面/im1.png')
+plt.close()

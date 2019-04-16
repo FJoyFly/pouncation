@@ -43,7 +43,6 @@ def get_data(input_file):
         word_list.extend(' ')
         word = u' '.join(word_list)
         word = re.findall('(.)/(.)', word)
-        print(word)
         if word:
             word = np.array(word)
             data.append(list(word[:, 0]))
@@ -129,11 +128,5 @@ with open(join(path, "all_data.pkl"), 'wb') as f:
     pickle.dump(id2word, f)
     pickle.dump(tag2id, f)
     pickle.dump(id2tag, f)
-print('Pickle1 Finished!')
+print('Pickle Finished!')
 
-with open(join(path, "word2id_data.pkl"), 'wb') as f:
-    pickle.dump(tag2id, f)
-    pickle.dump(id2tag, f)
-    pickle.dump(word2id, f)
-    pickle.dump(id2word, f)
-print('Pickle2 Finished!')

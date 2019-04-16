@@ -4,7 +4,7 @@ import math
 import numpy as np
 from sklearn.model_selection import train_test_split
 from os.path import join
-import heapq
+# import heapq
 import os
 import codecs
 import shutil
@@ -77,88 +77,6 @@ def bias_variable(shape):
     return tf.Variable(initial)
 
 
-# trans_pro_new = np.zeros(shape=(7, 7), dtype=np.float32)
-# trans_pro_new[0][1] += 0.8
-# trans_pro_new[0][0] += 0.2
-# trans_pro_new[1][2] += 0.635
-# trans_pro_new[1][3] += 0.222
-# trans_pro_new[1][4] += 0.046
-# trans_pro_new[1][5] += 0.097
-# trans_pro_new[2][2] += 0.831
-# trans_pro_new[2][3] += 0.169
-# trans_pro_new[3][4] += 1
-# trans_pro_new[4][5] += 1
-# trans_pro_new[5][0] += 0.007
-# trans_pro_new[5][1] += 0.993
-#
-#
-# # 根据beam_search算法 每次取前3次概率最高的序列
-# def search_bestresult(waiting_deal_label):
-#     final_label = []
-#     for duan in waiting_deal_label:
-#         label_fin = [[] for _ in range(3)]
-#         now_label_three = [[] for _ in range(3)]
-#         now_score_three = np.zeros(shape=3)
-#         now_label_nine = [[] for _ in range(9)]
-#         now_score_nine = np.zeros(shape=9)
-#         lamda_t = 0.7
-#         beda = 0.01
-#         word_length = 0
-#         zi_num = 0
-#         for zi in duan:
-#             score_three = heapq.nlargest(3, zi)
-#             index_three = list(map(list(zi).index, score_three))
-#             if now_label_three[0]:
-#                 zi_num += 1
-#                 for i in range(3):
-#                     now_score_nine[i] = now_score_three[i]
-#                     now_label_nine[i] = []
-#                     now_label_nine[i].extend(now_label_three[i])
-#                     now_score_nine[i + 3] = now_score_three[i]
-#                     now_label_nine[i + 3] = []
-#                     now_label_nine[i + 3].extend(now_label_three[i])
-#                     now_score_nine[i + 6] = now_score_three[i]
-#                     now_label_nine[i + 6] = []
-#                     now_label_nine[i + 6].extend(now_label_three[i])
-#                 for i in range(3):
-#                     one = now_label_nine[i][len(now_label_nine[i]) - 1]
-#                     two = index_three[0]
-#                     now_score_nine[i] = now_score_nine[i] + score_three[0] + lamda_t * trans_pro_new[one][
-#                         two] + beda * word_length
-#                     now_label_nine[i].append(two)
-#
-#                     one_2 = now_label_nine[i + 3][len(now_label_nine[i + 3]) - 1]
-#                     two_2 = index_three[1]
-#                     now_score_nine[i + 3] = now_score_nine[i + 3] + score_three[1] + lamda_t * trans_pro_new[
-#                         one_2][two_2] + beda * word_length
-#                     now_label_nine[i + 3].append(two_2)
-#
-#                     one_3 = now_label_nine[i + 6][len(now_label_nine[i + 6]) - 1]
-#                     two_3 = index_three[2]
-#                     now_score_nine[i + 6] = now_score_nine[i + 6] + score_three[2] + lamda_t * trans_pro_new[
-#                         one_3][two_3] + beda * word_length
-#                     now_label_nine[i + 6].append(two_3)
-#
-#                 now_score_f = heapq.nlargest(3, now_score_nine)
-#                 index_f = list(map(list(now_score_nine).index, now_score_f))
-#                 for i in range(3):
-#                     now_label_three[i] = []
-#                     now_score_three[i] = now_score_f[i]
-#                     now_label_three[i].extend(now_label_nine[index_f[i]])
-#                     label_fin[i].append(now_label_three[i])
-#                 # print(now_label_three[0])
-#             else:
-#                 zi_num += 1
-#                 for i in range(3):
-#                     now_score_three[i] += score_three[i]
-#                     now_label_three[i].append(index_three[i])
-#                     label_fin[i].append(now_label_three[i])
-#
-#                 # print(now_label_three[0])
-#         final_label.append(now_label_nine[0])
-#     return final_label
-
-
 def judge(x):
     if -1 < x < 11:
         return x
@@ -215,7 +133,7 @@ def new_compute_evaluate(lable1, lable2):
         for i in range(len(duan1)):
             if duan1[i].isupper() and duan2[i].isupper():
                 real_nopoun += 1
-            elif duan1[1].islower() and duan2[i].islower():
+            elif duan1[i].islower() and duan2[i].islower():
                 if duan1[i] == duan2[i]:
                     real_biao += 1
                 real_poun += 1
@@ -227,8 +145,10 @@ def new_compute_evaluate(lable1, lable2):
                 pre_biao += 1
             if duan2[i].islower():
                 all_biao += 1
-    biaodian_P = round(real_biao / pre_biao)
-    biaodian_R = round(real_biao / all_biao)
+    print(real_biao)
+    print(pre_biao)
+    biaodian_P = round(real_biao / pre_biao, 3)
+    biaodian_R = round(real_biao / all_biao, 3)
     biaodian_F = round(2 * biaodian_P * biaodian_R / (biaodian_P + biaodian_R), 3)
     duanju_P_value = round(real_poun / (real_poun + fail_poun), 3)
     duanju_R_value = round(real_poun / (real_poun + fail_nopoun), 3)
@@ -238,7 +158,7 @@ def new_compute_evaluate(lable1, lable2):
 
 
 # 显示对比解结果
-def display_word(word, label1, label2):
+def display_word(word, label, file):
     '''
 
     :param word: 一段古文
@@ -246,61 +166,29 @@ def display_word(word, label1, label2):
     :param label2: 该段古文的真实标签
     :return: 打印出对比结果
     '''
-    outputdata1 = codecs.open(join(outputs_path, '原始'), 'a+', 'utf-8')
-    outputdata2 = codecs.open(join(outputs_path, '预测'), 'a+', 'utf-8')
+    outputdata = codecs.open(join(outputs_path, file), 'a+', 'utf-8')
     word_list = word.split(' ')
-    outputdata1.write('  ')
-    outputdata2.write('  ')
+    outputdata.write('  ')
     for i in range(len(word_list)):
-        if label1[i] == 'd':
-            outputdata1.write(word_list[i] + '，')
-        elif label1[i] == 'j':
-            outputdata1.write(word_list[i] + '。')
-        elif label1[i] == 'w':
-            outputdata1.write(word_list[i] + '？')
-        elif label1[i] == 'g':
-            outputdata1.write(word_list[i] + '！')
-        elif label1[i] == 'f':
-            outputdata1.write(word_list[i] + '；')
-        elif label1[i] == 'm':
-            outputdata1.write(word_list[i] + '：')
-        elif label1[i] == 't':
-            outputdata1.write(word_list[i] + '、')
+        if label[i] == 'd':
+            outputdata.write(word_list[i] + '，' + ' ')
+        elif label[i] == 'j':
+            outputdata.write(word_list[i] + '。' + ' ')
+        elif label[i] == 'w':
+            outputdata.write(word_list[i] + '？' + ' ')
+        elif label[i] == 'g':
+            outputdata.write(word_list[i] + '！' + ' ')
+        elif label[i] == 'f':
+            outputdata.write(word_list[i] + '；' + ' ')
+        elif label[i] == 'm':
+            outputdata.write(word_list[i] + '：' + ' ')
+        elif label[i] == 't':
+            outputdata.write(word_list[i] + '、' + ' ')
         else:
-            outputdata1.write(word_list[i])
-        if label2[i] == 'd':
-            outputdata2.write(word_list[i] + '，')
-        elif label2[i] == 'j':
-            outputdata2.write(word_list[i] + '。')
-        elif label2[i] == 'w':
-            outputdata2.write(word_list[i] + '？')
-        elif label2[i] == 'g':
-            outputdata2.write(word_list[i] + '！')
-        elif label2[i] == 'f':
-            outputdata2.write(word_list[i] + '；')
-        elif label2[i] == 'm':
-            outputdata2.write(word_list[i] + '：')
-        elif label2[i] == 't':
-            outputdata2.write(word_list[i] + '、')
-        else:
-            outputdata2.write(word_list[i])
+            outputdata.write(word_list[i])
 
-        # if label1[i] == 1:
-        #     outputdata1.write(' ' + word_list[i])
-        # elif label1[i] == 0:
-        #     outputdata1.write(' ' + word_list[i] + ' ')
-        # else:
-        #     outputdata1.write(word_list[i])
-        # if label2[i] == 1:
-        #     outputdata2.write(' ' + word_list[i])
-        # elif label2[i] == 0:
-        #     outputdata2.write(' ' + word_list[i] + ' ')
-        # else:
-        #     outputdata2.write(word_list[i])
-    outputdata1.write('\n')
-    outputdata1.close()
-    outputdata2.write('\n')
-    outputdata2.close()
+    outputdata.write('\n')
+    outputdata.close()
 
 
 def dele_none(label):
@@ -322,21 +210,18 @@ def main():
     # 分割数据集
     train_word, train_label, dev_word, dev_label, test_word, test_label = get_data(data_word, data_label)
     train_step = math.floor(train_word.shape[0] / train_batch_size)
-    print(train_step)
     # train_restseq_num = train_word.shape[0] - train_batch_size * (train_step - 1)
     dev_step = math.floor(dev_word.shape[0] / dev_batch_size)
     # dev_restseq_num = dev_word.shape[0] - dev_batch_size * (dev_step - 1)
     test_step = math.floor(test_word.shape[0] / test_batch_size)
     # test_restseq_num = test_word.shape[0] - test_batch_size * (test_step - 1)
     vocab_size = len(word2id) + 1
-    print("vocabulary size:", vocab_size)
 
     global_step = tf.Variable(-1, trainable=False, name='global_step')
 
     # 各数据集batch
     train_dataset = tf.data.Dataset.from_tensor_slices((train_word, train_label))
     train_dataset = train_dataset.batch(train_batch_size, drop_remainder=True)
-    print(train_dataset)
 
     dev_dataset = tf.data.Dataset.from_tensor_slices((dev_word, dev_label))
     dev_dataset = dev_dataset.batch(dev_batch_size, drop_remainder=True)
@@ -358,7 +243,7 @@ def main():
     test_initial_op = iterator.make_initializer(test_dataset)
 
     # Input layer
-    data_word, data_label = iterator.get_next()
+    data_word_x, data_label_y = iterator.get_next()
 
     # if flag:
     #     seq = np.full(batch_size, sequence_length, dtype=np.int32)
@@ -368,7 +253,7 @@ def main():
     seq = np.full(batch_size, sequence_length, dtype=np.int32)
     # embedding layer
     embeddings = tf.Variable(tf.random_uniform([vocab_size, embedding_size], -1, 1), dtype=tf.float32)
-    inputs = tf.nn.embedding_lookup(embeddings, data_word)
+    inputs = tf.nn.embedding_lookup(embeddings, data_word_x)
 
     # 梯度下降
     # keep_prob = tf.placeholder(tf.float32, [])
@@ -412,14 +297,13 @@ def main():
     y_label_pre = tf.cast(tf.argmax(pre_labels_reshape, axis=-1), tf.int32)
 
     # 真实标签
-    y_label_reshape = tf.reshape(data_label, (-1, sequence_length, 12))
+    y_label_reshape = tf.reshape(data_label_y, (-1, sequence_length, 12))
 
     y_label_real = tf.cast(tf.argmax(y_label_reshape, axis=-1), tf.int32)
 
     # CRF层
     log_likelihood, transition_params = tf.contrib.crf.crf_log_likelihood(
         begin_pre_labels_reshape, y_label_real, seq)
-    print(transition_params.shape)
 
     viterbi_sequence, _ = tf.contrib.crf.crf_decode(begin_pre_labels_reshape, transition_params, seq)
     with tf.name_scope('loss'):
@@ -541,54 +425,67 @@ def main():
             saver.restore(sess, last_ckpt)
         print('Restore From', last_ckpt)
         sess.run(test_initial_op)
-        P, R, F, A = [], [], [], []
+        P, R, F, A, P_b, R_b, F_b = [], [], [], [], [], [], []
         for step in range(int(test_step)):
             summary_run, data_word_result, data_label_pre_result, data_label_real_result, acc = sess.run(
-                [summaries, data_word, viterbi_sequence, y_label_real, accuracy])
-            print(data_label_pre_result.shape)
+                [summaries, data_word_x, viterbi_sequence, y_label_real, accuracy])
 
             print("test step", step, '未处理前Accuracy', acc)
             if gstep % steps_per_sumary == 0:
                 writer.add_summary(summary_run, gstep)
                 print('Write Summaries to', summaries_dir)
-            # P_value, R_value, F_value, A_value = compute_PRFvalues(data_label_pre_result, data_label_real_result)
-            # P.append(P_value)
-            # R.append(R_value)
-            # F.append(F_value)
-            # A.append(A_value)
-            # print(P_value, R_value, F_value, A_value)
             com1 = []
             com2 = []
             for i in range(len(data_word_result)):
-                print('当前', i)
                 y_real_label_ = list(map(judge, data_label_real_result[i]))
                 y_real_label_ = dele_none(y_real_label_)
                 data_word_result_final = list(filter(lambda x: x, data_word_result[i]))
                 y_predict_label_final = list(map(judge, data_label_pre_result[i]))
                 y_predict_label_final = dele_none(y_predict_label_final)
                 word_deal = ' '.join(id2word[data_word_result_final].values)
-
-                word_x = ''.join(id2word[data_word_result_final].values)
                 list_label_y = id2tag[y_predict_label_final].values
                 list_label_y_real = id2tag[y_real_label_].values
-                print('---------------------------')
-                print(list_label_y)
-                print(list_label_y_real)
-                print('---------------------------')
-                if number_print < 100:
-                    display_word(word_deal, list_label_y, list_label_y_real)
-                    number_print += 1
+                if number_print < 10:
+                    if len(list(word_deal)) > 150:
+                        print(word_deal)
+                        print(list_label_y)
+                        print(list_label_y_real)
+                        display_word(word_deal, list_label_y, '预测')
+                        display_word(word_deal, list_label_y_real, '原始')
+                        number_print += 1
                 com1.append(list_label_y)
                 com2.append(list_label_y_real)
-                label_y = ''.join(id2tag[y_predict_label_final].values)
-                label_y_real = ''.join(id2tag[y_real_label_].values)
-                label_y = label_y.replace(' ', '')
-                label_y_real = label_y_real.replace(' ', '')
-                print(word_x)
-                print(label_y)
-                print(label_y_real)
+                # word_x = ''.join(id2word[data_word_result_final].values)
+                # label_y = ''.join(id2tag[y_predict_label_final].values)
+                # label_y_real = ''.join(id2tag[y_real_label_].values)
+                # label_y = label_y.replace(' ', '')
+                # label_y_real = label_y_real.replace(' ', '')
+                # print(word_x)
+                # print(label_y)
+                # print(label_y_real)
+            m1, m2, m3, m4, m5, m6, m7 = new_compute_evaluate(com1, com2)
+            print(m1, m2, m3, m4)
+            print(m5, m6, m7)
+            P.append(m1)
+            R.append(m2)
+            F.append(m3)
+            A.append(m4)
+            P_b.append(m5)
+            R_b.append(m6)
+            F_b.append(m7)
             # new_compute_evaluate(com1, com2)
         X_pan = np.linspace(0, int(test_step) - 1, int(test_step))
+        plt.plot(X_pan, P_b)
+        plt.scatter(X_pan, P_b)
+        plt.plot(X_pan, R_b)
+        plt.scatter(X_pan, R_b)
+        plt.plot(X_pan, F_b)
+        plt.scatter(X_pan, F_b)
+        plt.title('the value of P,R,F in the biao_test')
+        plt.xlabel('test_step')
+        plt.ylabel('P,R,F')
+        plt.savefig('/home/joyfly/桌面/image.png')
+        plt.close()
         plt.plot(X_pan, P)
         plt.scatter(X_pan, P)
         plt.plot(X_pan, R)
@@ -597,10 +494,11 @@ def main():
         plt.scatter(X_pan, F)
         plt.plot(X_pan, A)
         plt.scatter(X_pan, A)
-        plt.title('在测试集中的P,R,F,A值')  # fontdict=zhfont1
-        plt.xlabel('test_step', fontdict=zhfont1)
-        plt.ylabel('P,R,F,A', fontdict=zhfont1)
-        plt.savefig('/home/joyfly/桌面/image.png')
+        plt.title('the value of P,R,F in the duan_test')
+        plt.xlabel('test_step')
+        plt.ylabel('P,R,F,A')
+        plt.savefig('/home/joyfly/桌面/image1.png')
+        plt.close()
 
 
 if __name__ == '__main__':

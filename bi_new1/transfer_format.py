@@ -2,8 +2,6 @@ import codecs
 import os
 import os.path
 import re
-import numpy as np
-import math
 
 file_path = '/home/joyfly/桌面/全部/别史'
 outfile = '/home/joyfly/桌面/宋书'
@@ -36,7 +34,7 @@ def search_txt(file_path, outfile):
             if os.path.splitext(newdir)[1] == '.txt':
                 for line in open(newdir):
                     if line:
-                        if len(line) > 20:  # 对原始文段清洗一遍,判断是否是带有标点的段落.是,则加入
+                        if len(line) > 32:  # 对原始文段清洗一遍,判断是否是带有标点的段落.是,则加入
                             word = re.findall(compile, line)
                             if word is None:
                                 break
@@ -64,6 +62,7 @@ def change_format(input_file, output_file):
     :param output_file:  输出初整理文本
     :return:
     """
+    global num_word_all
     input_data = codecs.open(input_file, 'r', 'utf-8')
     output_data = codecs.open(output_file, 'w', 'utf-8')
     for new_data in input_data.readlines():
@@ -80,6 +79,7 @@ def change_format(input_file, output_file):
                     #         or i == u'\u3001':
                     output_data.write(' ' + i + ' ')
                 elif u'\u4E00' <= i <= u'\u9FEF':
+                    num_word_all += 1
                     output_data.write(i)
                 else:
                     continue
@@ -120,7 +120,7 @@ def character_tagging(input_file, output_file):
     :param output_file: 终整理文本
     :return: 已标注文本
     '''
-    global num_word_all, all_length, tag
+    global all_length, tag
     input_data = codecs.open(input_file, 'r', 'utf-8')
     output_data = codecs.open(output_file, 'w', 'utf-8')
     for line in input_data.readlines():
@@ -146,7 +146,6 @@ def character_tagging(input_file, output_file):
                     tag = 't'
                 else:
                     continue
-                num_word_all += 1
                 if len(word) == 1:
                     output_data.write(word + '/' + tag + '  ')
                 else:
@@ -194,6 +193,5 @@ character_tagging(in_output_file, output_file)
 print('段落总数：', all_length)
 print('超过固定长度的段落数：', length)
 # print(len(count_vocab(in_output_file)))
-# num_of_lenght = score_transfer(in_output_file)
 # print('各句子长度数:', num_of_lenght)
 print(num_word_all)
